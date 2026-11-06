@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>三级预测体系：区域定总量、台区定形态、用户定响应</title>
+<style>
+  :root{
+    --teal:#00B2B0; --teal-deep:#00726F; --teal-soft:#EFF8F8; --teal-frame:#CCF2F2;
+    --orange:#FF9700; --orange-text:#B36A00;
+    --ink:#1B2A2C; --ink-2:#59696C; --ink-3:#66777A;
+    --line:#D7DCDA; --line-soft:#E6EBE9; --bg:#FFFFFF;
+    --font:"Microsoft YaHei","微软雅黑","Source Han Sans SC","Noto Sans SC","PingFang SC",sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{width:1280px;height:720px;overflow:hidden;background:var(--bg);
+       font-family:var(--font);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .slide{position:relative;width:1280px;height:720px;overflow:hidden;background:#fff;}
+
+  /* 标题区：双叠方块 + 标题 + 通栏细线 */
+  .mark{position:absolute;left:38px;top:20px;width:55px;height:55px;border:1px solid var(--teal);z-index:5;}
+  .mark::after{content:"";position:absolute;left:18px;top:16px;width:44px;height:40px;background:var(--teal);}
+  .title{position:absolute;left:112px;top:14px;margin:0;font-size:33px;line-height:48px;
+         font-weight:700;letter-spacing:.5px;color:var(--teal);}
+  .meta{position:absolute;right:38px;top:16px;text-align:right;font-size:12px;line-height:18px;color:var(--ink-2);}
+  .meta b{display:block;font-size:13px;color:var(--ink-3);letter-spacing:1px;}
+  .rule{position:absolute;left:38px;right:38px;top:92px;height:2px;background:var(--teal-frame);}
+
+  /* 导语条 */
+  .lede{position:absolute;left:38px;right:38px;top:108px;padding:16px 20px;
+        background:var(--teal-soft);border:1px solid var(--teal-frame);
+        border-left:4px solid var(--teal);border-radius:3px;
+        font-size:19px;line-height:31px;color:var(--ink);}
+  .lede b{color:var(--teal-deep);}
+
+  /* 主区 */
+  .stage{position:absolute;left:38px;right:38px;top:214px;bottom:96px;
+         display:grid;grid-template-columns:1fr 420px;gap:16px;}
+
+  .fig-card{position:relative;background:#fff;border:1px solid var(--line);border-radius:4px;
+            padding:14px 16px 0;display:flex;flex-direction:column;}
+  .fig-head{font-size:13px;font-weight:700;color:var(--teal-deep);margin-bottom:6px;}
+  .fig-head span{font-weight:400;color:var(--ink-3);margin-left:8px;}
+  .fig-body{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;}
+  .fig-body svg{display:block;width:100%;height:100%;}
+  .fig-cap{position:absolute;left:16px;right:16px;bottom:8px;font-size:12px;line-height:17px;color:var(--ink-3);}
+
+  .rail{display:flex;flex-direction:column;gap:10px;}
+  .rcard{flex:1;background:linear-gradient(180deg,var(--teal-soft),#FBFEFD);
+         border:1px solid var(--line);border-radius:4px;padding:12px 14px;}
+  .rcard h3{margin:0 0 6px;font-size:15px;line-height:21px;font-weight:700;color:var(--ink);}
+  .rcard h3 em{font-style:normal;color:var(--teal-deep);margin-right:8px;}
+  .rcard p{margin:0;font-size:13px;line-height:20px;color:var(--ink-2);}
+  .rcard p b{color:var(--orange-text);}
+
+  /* 底部要点条 + 页脚 */
+  .band{position:absolute;left:38px;right:38px;bottom:60px;height:30px;display:flex;align-items:center;
+        background:var(--teal-soft);border:1px solid var(--teal-frame);border-radius:3px;
+        padding:0 14px;font-size:13px;color:var(--ink);}
+  .band b{color:var(--teal-deep);margin-right:10px;}
+  .foot{position:absolute;left:0;right:0;bottom:0;height:34px;background:var(--teal);
+        display:flex;align-items:center;justify-content:space-between;padding:0 38px;
+        font-size:12px;color:#fff;letter-spacing:.5px;}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="mark"></div>
+  <h1 class="title">2.1 三级预测体系：区域定总量、台区定形态、用户定响应</h1>
+  <div class="meta"><b>08 / 16</b>02 工作进展</div>
+  <div class="rule"></div>
+
+  <div class="lede">
+    预测体系按「区域—台区—用户」三级组织，<b>逐级下发结果、逐级回传偏差</b>：区域级回答总量与趋势，台区级回答形态与波动，
+    用户级回答可调资源的聚合响应。三级共用一套数据底座与口径，模型独立训练、结果逐级校正。
+  </div>
+
+  <div class="stage">
+    <div class="fig-card">
+      <div class="fig-head">图 2-1<span>三级预测的逐级下发与偏差回传</span></div>
+      <div class="fig-body">
+        <svg viewBox="0 0 700 300" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" font-family="Microsoft YaHei, sans-serif">
+          <defs>
+            <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+              <path d="M0,0 L8,3 L0,6 z" fill="#00B2B0"/>
+            </marker>
+            <marker id="ar2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+              <path d="M0,0 L8,3 L0,6 z" fill="#FF9700"/>
+            </marker>
+          </defs>
+          <!-- 三级节点 -->
+          <g>
+            <rect x="24" y="36" width="180" height="78" rx="4" fill="#EFF8F8" stroke="#00B2B0"/>
+            <text x="114" y="66" text-anchor="middle" font-size="16" font-weight="700" fill="#00726F">区域级</text>
+            <text x="114" y="91" text-anchor="middle" font-size="12" fill="#59696C">总量 · 趋势 · 检修计划</text>
+          </g>
+          <g>
+            <rect x="260" y="36" width="180" height="78" rx="4" fill="#EFF8F8" stroke="#00B2B0"/>
+            <text x="350" y="66" text-anchor="middle" font-size="16" font-weight="700" fill="#00726F">台区级</text>
+            <text x="350" y="91" text-anchor="middle" font-size="12" fill="#59696C">形态 · 波动 · 光伏渗透</text>
+          </g>
+          <g>
+            <rect x="496" y="36" width="180" height="78" rx="4" fill="#EFF8F8" stroke="#00B2B0"/>
+            <text x="586" y="66" text-anchor="middle" font-size="16" font-weight="700" fill="#00726F">用户级</text>
+            <text x="586" y="91" text-anchor="middle" font-size="12" fill="#59696C">可调资源 · 响应意愿</text>
+          </g>
+          <!-- 下发 -->
+          <path d="M206 66 L254 66" stroke="#00B2B0" stroke-width="1.6" marker-end="url(#ar)"/>
+          <path d="M442 66 L490 66" stroke="#00B2B0" stroke-width="1.6" marker-end="url(#ar)"/>
+          <text x="230" y="56" text-anchor="middle" font-size="11" fill="#00726F">下发</text>
+          <text x="466" y="56" text-anchor="middle" font-size="11" fill="#00726F">下发</text>
+          <!-- 回传 -->
+          <path d="M586 114 L586 150" stroke="#FF9700" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <path d="M114 114 L114 150" stroke="#FF9700" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <path d="M586 150 L446 150" stroke="#FF9700" stroke-width="1.6" marker-end="url(#ar2)"/>
+          <path d="M254 150 L114 150" stroke="#FF9700" stroke-width="1.6" marker-end="url(#ar2)"/>
+          <text x="516" y="142" text-anchor="middle" font-size="11" fill="#B36A00">偏差回传</text>
+          <text x="184" y="142" text-anchor="middle" font-size="11" fill="#B36A00">偏差回传</text>
+          <!-- 数据底座 -->
+          <rect x="24" y="188" width="652" height="52" rx="4" fill="#FBFEFD" stroke="#D7DCDA" stroke-dasharray="4 3"/>
+          <text x="350" y="220" text-anchor="middle" font-size="13" fill="#59696C">统一数据底座：量测 · 气象 · 档案 · 事件（同一口径、同一时间粒度）</text>
+          <!-- 校正环 -->
+          <text x="350" y="282" text-anchor="middle" font-size="12" fill="#00726F">偏差归因 → 校正参数 → 重训模型 → 结果复核</text>
+        </svg>
+      </div>
+      <div class="fig-cap">三级之间以预测结果逐级下发、偏差逐级回传；偏差归因结果同时回流到参数校正与模型重训。</div>
+    </div>
+
+    <div class="rail">
+      <div class="rcard">
+        <h3><em>01</em>区域级：定总量</h3>
+        <p>以地区口径做总量与趋势预测，融合气象、检修计划与节假日，<b>短期准确率约 98%</b>。</p>
+      </div>
+      <div class="rcard">
+        <h3><em>02</em>台区级：定形态</h3>
+        <p>逐台区建模，刻画光伏渗透、负荷率与 96 点形态，<b>短期准确率约 89%</b>，异常台区单独标记。</p>
+      </div>
+      <div class="rcard">
+        <h3><em>03</em>用户级：定响应</h3>
+        <p>面向可调资源聚合，识别响应意愿与基线偏差，为需求响应与有序用电提供依据。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="band"><b>口径</b>三级分别验证、不做横向比较；数字为示例，实际以实验报告为准。</div>
+
+  <div class="foot"><span>示例页 · 版式参照（1280 × 720）</span><span>sgcc-report-ppt · Agent Skill</span></div>
+</div>
+</body>
+</html>
