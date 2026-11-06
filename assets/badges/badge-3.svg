@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="153" height="28" viewBox="0 0 153 28" role="img" aria-label="成图: 3840×2160 3x">
+  <linearGradient id="s" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <g font-family="Verdana,Segoe UI,Microsoft YaHei,DejaVu Sans,sans-serif" font-size="10" font-weight="bold" letter-spacing="1.4">
+    <rect width="43" height="28" rx="3" fill="#555"/>
+    <rect x="43" width="109" height="28" rx="3" fill="#ff9700"/>
+    <rect width="153" height="28" rx="3" fill="url(#s)"/>
+    <g fill="#fff" text-anchor="middle">
+      <text x="21.7" y="8.5">成图</text>
+      <text x="98.1" y="8.5">3840×2160 3x</text>
+    </g>
+  </g>
+</svg>

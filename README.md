@@ -4,10 +4,10 @@
   <p>国网 / 电网系统正式汇报 PPT 的风格合同与交付流水线</p>
 
   <p>
-    <img src="https://img.shields.io/badge/规范-Agent_Skill-4f7df5?style=for-the-badge" />
-    <img src="https://img.shields.io/badge/画布-1280×720-00b2b0?style=for-the-badge" />
-    <img src="https://img.shields.io/badge/成图-3840×2160_3x-ff9700?style=for-the-badge" />
-    <img src="https://img.shields.io/badge/脚本-6_个-22c55e?style=for-the-badge" />
+    <img src="assets/badges/badge-1.svg" alt="规范：Agent Skill" />
+    <img src="assets/badges/badge-2.svg" alt="画布：1280×720" />
+    <img src="assets/badges/badge-3.svg" alt="成图：3840×2160 3x" />
+    <img src="assets/badges/badge-4.svg" alt="脚本：6 个" />
   </p>
 </div>
 
