@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>一条闭环贯穿全程：事前可用、事中可算、事后可改</title>
+<style>
+  :root{
+    --bg-primary:#FFFFFF;
+    --bg-secondary:#EFF8F8;
+    --card-bg-from:#EFF8F8;
+    --card-bg-to:#FBFEFD;
+    --card-border:#D7DCDA;
+    --card-radius:4px;
+    --text-primary:#1B2A2C;
+    --text-secondary:#59696C;
+    --accent-1:#009C9A;
+    --accent-2:#FF9700;
+    --accent-3:#00B0F0;
+    --accent-4:#2DB9BA;
+    --teal-text:#00726F;
+    --orange-text:#B36A00;
+    --text-tertiary:#66777A;
+    --hairline:#D7DCDA;
+    --hairline-soft:#E6EBE9;
+    --border-strong:#B1BBB7;
+    --surface-board:#EFF8F8;
+    --surface-muted:#E6EBE9;
+    --shadow-card:0 1px 2px rgba(0,60,58,0.04);
+    --tpl-title:#00B2B0;
+    --tpl-rule:#00C0C1;
+    --tpl-frame:#CCF2F2;
+    --fs-overline:12px;
+    --fs-footnote:12px;
+    --fs-caption:12px;
+    --fs-tag:12px;
+    --font-primary:"Microsoft YaHei","微软雅黑","DengXian","等线","Source Han Sans SC","Noto Sans SC","PingFang SC",sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{margin:0;padding:0;}
+
+  body{
+    width:1280px;
+    height:720px;
+    overflow:hidden;
+    background:#FFFFFF;
+    font-family:var(--font-primary);
+    color:var(--text-primary);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    font-kerning:normal;
+    text-rendering:optimizeLegibility;
+  }
+
+  .slide{
+    position:relative;
+    width:1280px;
+    height:720px;
+    background:#FFFFFF;
+    overflow:hidden;
+  }
+
+  /* ---------- 模板标题区：双叠方块 + 标题一行 + 通栏细线 ---------- */
+  .tpl-mark{
+    position:absolute;
+    left:37.8px;
+    top:20.5px;
+    width:54.6px;
+    height:54.6px;
+    border:1px solid var(--tpl-rule);
+    z-index:6;
+  }
+  .tpl-mark::after{
+    content:"";
+    position:absolute;
+    left:18.3px;
+    top:15.5px;
+    width:44px;
+    height:44px;
+    background:var(--tpl-rule);
+  }
+  .slide-header{
+    position:absolute;
+    left:110.8px;
+    top:24.7px;
+    width:1060px;
+    height:44px;
+    z-index:5;
+  }
+  .page-title{
+    margin:0;
+    font-size:37.33px;   /* 28pt */
+    line-height:1.2;
+    font-weight:700;
+    letter-spacing:.005em;
+    color:var(--tpl-title);
+    text-align:left;
+    white-space:nowrap;
+  }
+  .tpl-rule{
+    position:absolute;
+    left:88.2px;
+    top:78.7px;
+    width:1191.8px;
+    height:1.33px;
+    background:var(--tpl-rule);
+    z-index:4;
+  }
+  .tpl-lede{
+    position:absolute;
+    left:38.9px;
+    top:95.2px;
+    width:1214px;
+    height:122px;
+    margin:0;
+    padding:7.5px 11.3px 4.8px 26.5px;
+    background:#FFFFFF;
+    border:1px solid var(--tpl-frame);
+    font-size:20px;
+    line-height:1.5;
+    font-weight:400;
+    color:var(--text-primary);
+    z-index:3;
+  }
+  .tpl-lede b{font-weight:700;}
+  .tpl-lede em{font-style:normal;font-weight:700;color:#C00000;}
+  .hdr-meta{
+    position:absolute;
+    right:-0.8px;
+    top:-6px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:7px;
+  }
+  .hdr-meta b{
+    font-size:var(--fs-caption);
+    line-height:1;
+    font-weight:600;
+    color:var(--text-secondary);
+    letter-spacing:1.2px;
+    font-variant-numeric:tabular-nums;
+  }
+  .hdr-meta i{
+    font-style:normal;
+    font-size:var(--fs-overline);
+    line-height:1;
+    font-weight:700;
+    letter-spacing:2.2px;
+    color:var(--text-tertiary);
+  }
+
+  /* ---------- decoration ---------- */
+  .deco-hairline{
+    position:absolute;
+    left:110px;
+    top:96px;
+    width:1060px;
+    height:1px;
+    background:var(--hairline-soft);
+    z-index:1;
+  }
+
+  /* ---------- figure plate (anchor) ---------- */
+  .plate{
+    position:absolute;
+    left:38.9px;
+    top:232px;
+    width:661px;
+    height:434px;
+    background:var(--bg-primary);
+    border:1px solid var(--card-border);
+    border-radius:var(--card-radius);
+    box-shadow:var(--shadow-card);
+    z-index:2;
+  }
+  .plate-figure{
+    position:absolute;
+    left:14px;
+    top:4px;
+    width:633px;
+    height:356px;
+    display:block;
+    object-fit:contain;
+  }
+  .plate-caption{
+    position:absolute;
+    left:14px;
+    right:14px;
+    top:366px;
+    min-height:38px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:flex-start;
+    gap:3px;
+    font-size:var(--fs-caption);
+    line-height:1.35;
+  }
+  .plate-caption b{
+    font-weight:700;
+    color:var(--teal-text);
+    letter-spacing:0.02em;
+    flex:0 0 auto;
+  }
+  .plate-caption span{
+    font-weight:400;
+    color:var(--text-tertiary);
+    letter-spacing:0.01em;
+    white-space:normal;
+  }
+
+  /* ---------- annotation rail: three questions ---------- */
+  .annot{
+    position:absolute;
+    left:716px;
+    top:232px;
+    width:525px;
+    height:326px;
+    background:var(--bg-primary);
+    border:1px solid var(--card-border);
+    border-radius:var(--card-radius);
+    box-shadow:var(--shadow-card);
+    overflow:hidden;
+    z-index:2;
+  }
+  .arow{
+    position:relative;
+    padding:12px 18px 0 18px;
+    overflow:hidden;
+  }
+  .arow h3{
+    margin:0;
+    display:flex;
+    align-items:baseline;
+    gap:7px;
+    white-space:nowrap;
+  }
+  .arow .ano{
+    font-size:var(--fs-tag);
+    line-height:1;
+    font-weight:700;
+    color:var(--teal-text);
+    letter-spacing:0.4px;
+    font-variant-numeric:tabular-nums;
+  }
+  .arow .astage{
+    font-size:17px;
+    line-height:1.25;
+    font-weight:600;
+    color:var(--text-primary);
+    letter-spacing:0.02em;
+  }
+  .arow .atag{
+    font-size:var(--fs-tag);
+    line-height:1.15;
+    font-weight:600;
+    color:var(--teal-text);
+    background:var(--bg-secondary);
+    border:1px solid var(--card-border);
+    border-radius:3px;
+    padding:1px 4px;
+    letter-spacing:0.06em;
+  }
+  .aq{
+    margin:3px 0 0 0;
+    font-size:16px;
+    line-height:1.4;
+    font-weight:400;
+    color:var(--text-primary);
+    letter-spacing:0.01em;
+  }
+  .anote{
+    margin:3px 0 0 0;
+    font-size:var(--fs-caption);
+    line-height:1.6;
+    font-weight:400;
+    color:var(--text-secondary);
+    letter-spacing:0.01em;
+  }
+  .anote b{
+    font-weight:700;
+    color:var(--teal-text);
+    font-variant-numeric:tabular-nums;
+  }
+  .arow-1{height:108px;}
+  .arow-2{height:108px;border-top:1px solid var(--hairline-soft);}
+  .arow-3{height:110px;border-top:1px solid var(--hairline-soft);}
+
+  /* ---------- conclusion block ---------- */
+  .conclusion{
+    position:absolute;
+    left:716px;
+    top:566px;
+    width:525px;
+    height:100px;
+    background:var(--surface-muted);
+    border:1px solid var(--card-border);
+    border-radius:var(--card-radius);
+    padding:13px 14px 0 14px;
+    overflow:hidden;
+    z-index:2;
+  }
+  .conclusion{
+    display:flex;
+    align-items:flex-start;
+    gap:22px;
+    padding-top:11px;
+  }
+  .qblock{flex:0 0 186px;display:flex;flex-wrap:wrap;gap:0 10px;}
+  .qline{
+    margin:0;
+    flex:0 0 auto;
+    font-size:14px;
+    line-height:1.6;
+    font-weight:600;
+    color:var(--teal-text);
+    letter-spacing:0.03em;
+    white-space:nowrap;
+  }
+  .rside{flex:1 1 auto;min-width:0;}
+  .rhead{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:0 0 7px 0;
+  }
+  .rhead span{
+    font-size:var(--fs-caption);
+    line-height:1;
+    font-weight:700;
+    color:var(--text-secondary);
+    letter-spacing:1.4px;
+    white-space:nowrap;
+    flex:0 0 auto;
+  }
+  .rhead i{
+    display:block;
+    flex:1 1 auto;
+    height:1px;
+    background:var(--border-strong);
+  }
+  .rtext{
+    margin:0;
+    font-size:13px;
+    line-height:1.65;
+    font-weight:400;
+    color:var(--text-primary);
+    letter-spacing:0.01em;
+  }
+
+  /* ---------- footer ---------- */
+  .slide-footer{
+    position:absolute;
+    bottom:12px;
+    left:110px;
+    right:110px;
+    height:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    z-index:10;
+  }
+  .footer-section{
+    font-size:var(--fs-footnote);
+    line-height:1;
+    color:var(--text-secondary);
+    opacity:0.55;
+    letter-spacing:1px;
+  }
+  .footer-page{
+    font-size:var(--fs-footnote);
+    line-height:1;
+    color:var(--text-secondary);
+    opacity:0.55;
+    letter-spacing:1px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ---------- 版面配比微调 ---------- */
+  .slide, body{ background:#EFF8F8 !important; }
+  .plate,.annot{ background:#FFFFFF !important; }
+
+
+  /* ---------- 溢出收口 ---------- */
+  .annot{ height:327px !important; }
+
+
+  /* ---------- 参考稿底色：顶部浅青渐白 + 底部青绿带 ---------- */
+  body,.slide{
+    background:linear-gradient(180deg,#E6F6F6 0%,#EFF9F9 34%,#FFFFFF 72%) !important;
+  }
+  .tpl-band{
+    position:absolute; left:0; bottom:0; width:100%; height:38px;
+    background:linear-gradient(90deg,#00B2B0 0%,#27B1A4 100%);
+    z-index:3;
+  }
+  .slide-footer{ bottom:9px !important; z-index:12 !important; }
+  .slide-footer .footer-section,
+  .slide-footer .footer-page{ color:#FFFFFF !important; opacity:1 !important; }
+
+  /* ---------- 排版校准 ---------- */
+  .plate{ left:110px !important; width:590px !important; }
+  .plate-figure{ left:14px !important; width:562px !important; }
+  .plate-caption{ left:14px !important; right:14px !important; }
+  .annot,.conclusion{ left:716px !important; width:454px !important; }
+
+  /* ---------- 排版校准 2 ---------- */
+  .annot{ height:341px !important; }
+  .arow-3{ height:124px !important; }
+
+  /* ---------- 排版校准 3：恢复双栏原宽 ---------- */
+  .plate{ left:39px !important; width:661px !important; }
+  .plate-figure{ width:633px !important; }
+  .annot,.conclusion{ left:716px !important; width:525px !important; }
+  .annot{ height:327px !important; }
+  .arow-3{ height:110px !important; }
+
+
+  /* ---------- 导语框对齐内容区 ---------- */
+  .tpl-lede{ left:110px !important; width:1060px !important; }
+  .tpl-rule,.header-rule,.deco-hairline,.header-spine,.hdr-rule{
+    left:110px !important; width:1060px !important;
+  }
+
+  /* ---------- 第4页导语随内容区 ---------- */
+  .tpl-lede{ left:39px !important; width:1214px !important; }
+  .header-rule,.deco-hairline,.tpl-rule{ left:39px !important; width:1214px !important; }
+
+
+  /* ---------- 图注在框内匀开 ---------- */
+  .plate-figure{ top:16px !important; }
+  .plate-caption{ top:378px !important; }
+
+  /* ---------- 导语在框内垂直居中 ---------- */
+  .tpl-lede{ padding-top:31px !important; }
+  /* ---------- 框架图铺满卡片 ---------- */
+  .plate-figure{ left:14px !important; top:6px !important; width:633px !important;
+                 height:391px !important; object-fit:contain !important; }
+  .plate-caption{ top:399px !important; left:14px !important; right:14px !important;
+                  gap:0 !important; min-height:0 !important; }
+</style>
+</head>
+<body>
+<div class="slide">
+
+  <div class="tpl-mark" aria-hidden="true"></div>
+
+  <header class="slide-header">
+    <h1 class="page-title" data-card-id="s4-title-1">1.2 全流程闭环总体框架</h1>
+    <span class="hdr-meta"><b>04 / 22</b><i>02 研究内容</i></span>
+  </header>
+
+  <div class="tpl-rule" aria-hidden="true"></div>
+
+  <p class="tpl-lede" data-card-id="s4-lede-1">全流程按<b>事前</b>、<b>事中</b>、<b>事后</b>三段构建闭环：事前解决数据可用性，事中解决模型计算方法，事后解决偏差成因与模型更新时机。各段均按「传统做法—AI 赋能—实施成效」的次序展开，偏差与漂移的分析结论回流至治理规则与小模型，形成可复现的闭环。</p>
+
+  <section class="plate" data-card-id="s4-anchor-1">
+    <img class="plate-figure" src="../images/fig2-1-ppt.png" alt="图2-1 全流程总体框架：事前、事中、事后三列并置，右侧过程智能体，底部数据底座">
+    <div class="plate-caption">
+      <b>图2-1　全流程总体框架</b>
+      <span>覆盖用户、专变、公变、馈线、母线、主变、地区七层级；超短期、短期、中期、长期四尺度｜来源：1026.docx</span>
+    </div>
+  </section>
+
+  <section class="annot" data-card-id="s4-support-1">
+
+    <div class="arow arow-1">
+      <h3><span class="ano">01</span><span class="astage">事前</span><span class="atag">可用</span></h3>
+      <p class="aq">数据可用性</p>
+      <p class="anote">异常识别与缺失插补；新场景经 <b>14 天</b>数据即可上线</p>
+    </div>
+
+    <div class="arow arow-2">
+      <h3><span class="ano">02</span><span class="astage">事中</span><span class="atag">可算</span></h3>
+      <p class="aq">模型计算方法</p>
+      <p class="anote">大模型解析意图与场景，门控调度小模型并加权融合</p>
+    </div>
+
+    <div class="arow arow-3">
+      <h3><span class="ano">03</span><span class="astage">事后</span><span class="atag">可改</span></h3>
+      <p class="aq">偏差成因与<br>模型更新时机</p>
+      <p class="anote">偏差归类溯源 + 定时巡检；冬季准确率提升 <b>3.1—10.1</b> 个百分点（见 5.3 节）</p>
+    </div>
+
+  </section>
+
+  <section class="conclusion">
+    <div class="qblock" data-card-id="s4-support-2">
+      <p class="qline">数据治理打底</p>
+      <p class="qline">小模型保精度</p>
+      <p class="qline">大模型强协同</p>
+      <p class="qline">智能体促闭环</p>
+    </div>
+    <div class="rside" data-card-id="s4-context-1">
+      <div class="rhead"><span>总体结构</span><i></i></div>
+      <p class="rtext">各环节均按「传统做法—AI 赋能—实施成效」三段展开，偏差与漂移结论回流至治理规则、特征报告与小模型。</p>
+    </div>
+  </section>
+
+  <div class="tpl-band" aria-hidden="true"></div>
+
+  <footer class="slide-footer">
+    <span class="footer-section">AI 赋能中低压配网负荷预测全流程方法研究</span>
+    <span class="footer-page">江苏方天电力技术有限公司</span>
+  </footer>
+
+</div>
+</body>
+</html>

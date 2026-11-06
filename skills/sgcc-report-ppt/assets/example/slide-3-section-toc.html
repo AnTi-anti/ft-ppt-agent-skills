@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>负荷形态变了三个方向，经验式预测不再成立</title>
+<style>
+  :root{
+    /* 模板基准：整体负荷预测.pptx 内容页（13.33x7.5in，1in=96px） */
+    --tpl-title:#00B2B0;      /* 标题青绿 28pt 加粗 */
+    --tpl-rule:#00C0C1;       /* 标题下通栏细线 + 图标 */
+    --tpl-frame:#CCF2F2;      /* 导语框描边（#00C0BE 20% 叠白） */
+    --bg-primary:#FFFFFF;
+    --bg-secondary:#EFF8F8;
+    --card-border:#D7DCDA;
+    --card-radius:4px;
+    --text-primary:#1B2A2C;
+    --text-secondary:#59696C;
+    --text-tertiary:#66777A;
+    --accent-1:#009C9A;
+    --accent-2:#FF9700;
+    --teal-text:#00726F;
+    --orange-text:#B36A00;
+    --surface-tint:#EFF8F8;
+    --surface-band:#E6EBE9;
+    --surface-band-deep:#D7DCDA;
+    --border-strong:#B1BBB7;
+    --shadow-card:0 1px 2px rgba(0, 60, 58, 0.04);
+    --fs-overline:12px;
+    --fs-footnote:12px;
+    --fs-caption:12px;
+    --fs-table-head:13px;
+    --fs-tag:12px;
+    --font-primary:"Microsoft YaHei","微软雅黑","DengXian","等线","Source Han Sans SC","Noto Sans SC","PingFang SC",sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+
+  body{
+    width:1280px;
+    height:720px;
+    overflow:hidden;
+    background:var(--bg-primary);
+    font-family:var(--font-primary);
+    color:var(--text-primary);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    font-kerning:normal;
+    text-rendering:optimizeLegibility;
+  }
+
+  .slide{
+    position:relative;
+    width:1280px;
+    height:720px;
+    background:var(--bg-primary);
+    overflow:hidden;
+  }
+
+  /* ---------- 模板标题区：双叠方块 + 标题一行 + 通栏细线 ---------- */
+  .tpl-mark{
+    position:absolute;
+    left:37.8px;
+    top:20.5px;
+    width:54.6px;
+    height:54.6px;
+    border:1px solid var(--tpl-rule);
+    z-index:6;
+  }
+  .tpl-mark::after{
+    content:"";
+    position:absolute;
+    left:18.3px;
+    top:15.5px;
+    width:44px;
+    height:44px;
+    background:var(--tpl-rule);
+  }
+  .slide-header{
+    position:absolute;
+    left:110.8px;
+    top:24.7px;
+    width:1060px;
+    height:44px;
+    z-index:5;
+  }
+  .page-title{
+    margin:0;
+    font-size:37.33px;   /* 28pt */
+    line-height:1.2;
+    font-weight:700;
+    letter-spacing:.005em;
+    color:var(--tpl-title);
+    text-align:left;
+    white-space:nowrap;
+  }
+  .hdr-meta{
+    position:absolute;
+    right:-0.8px;
+    top:-6px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:6px;
+  }
+  .hdr-meta b{
+    font-size:var(--fs-caption);
+    line-height:1;
+    font-weight:600;
+    color:var(--text-secondary);
+    letter-spacing:1.2px;
+    font-variant-numeric:tabular-nums;
+  }
+  .hdr-meta i{
+    font-style:normal;
+    font-size:var(--fs-overline);
+    line-height:1;
+    font-weight:700;
+    letter-spacing:2.2px;
+    color:var(--text-tertiary);
+  }
+  .tpl-rule{
+    position:absolute;
+    left:88.2px;
+    top:78.7px;
+    width:1191.8px;
+    height:1.33px;
+    background:var(--tpl-rule);
+    z-index:4;
+  }
+
+  /* ---------- 导语：标题下一段话 ---------- */
+  .tpl-lede{
+    position:absolute;
+    left:38.9px;
+    top:95.2px;
+    width:1214px;
+    height:122px;      /* 1.271in，模板原值 */
+    margin:0;
+    padding:7.5px 11.3px 4.8px 26.5px;
+    background:#FFFFFF;
+    border:1px solid var(--tpl-frame);
+    font-size:20px;       /* 15pt */
+    line-height:1.5;      /* 150% */
+    font-weight:400;
+    color:var(--text-primary);
+    z-index:3;
+  }
+  .tpl-lede b{font-weight:700;}
+  .tpl-lede em{font-style:normal;font-weight:700;color:#C00000;}
+
+  /* ---------- 主体 ---------- */
+  .rail{
+    position:absolute;
+    left:110px;
+    top:232px;
+    width:340px;
+    height:376px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    z-index:2;
+  }
+  .rail-card{
+    position:relative;
+    flex:1 1 0;
+    padding:12px 14px 6px 38px;
+    background:var(--surface-tint);
+    border:1px solid var(--card-border);
+    border-radius:var(--card-radius);
+    box-shadow:var(--shadow-card);
+    overflow:hidden;
+  }
+  .rail-no{
+    position:absolute;
+    left:15px;
+    top:19px;
+    font-size:var(--fs-tag);
+    line-height:1;
+    font-weight:700;
+    letter-spacing:1px;
+    color:var(--teal-text);
+    font-variant-numeric:tabular-nums;
+  }
+  .rail-card h3{
+    margin:0 0 5px 0;
+    font-size:17px;
+    line-height:1.35;
+    font-weight:600;
+    color:var(--text-primary);
+    letter-spacing:.01em;
+    white-space:nowrap;
+  }
+  .rail-card p{
+    margin:0;
+    font-size:16px;
+    line-height:1.75;
+    font-weight:400;
+    color:var(--text-primary);
+    overflow-wrap:break-word;
+    word-break:normal;
+  }
+
+  .rail-card.card-tall{flex:1.45 1 0;}
+  .m-row{
+    display:flex;
+    align-items:baseline;
+    gap:20px;
+    margin:2px 0 1px 0;
+    height:34px;
+  }
+  .m{display:flex;align-items:baseline;white-space:nowrap;}
+  .m b{
+    font-size:30px;
+    line-height:1.1;
+    font-weight:700;
+    letter-spacing:-.01em;
+    color:var(--accent-1);
+    font-variant-numeric:tabular-nums;
+  }
+  .m .u{
+    margin-left:2px;
+    font-size:var(--fs-caption);
+    line-height:1.2;
+    font-weight:600;
+    color:var(--teal-text);
+  }
+  .m .l{
+    margin-left:4px;
+    font-size:var(--fs-tag);
+    line-height:1.2;
+    font-weight:400;
+    color:var(--text-tertiary);
+  }
+
+  /* ---------- 表卡 ---------- */
+  .tbl-card{
+    position:absolute;
+    left:474px;
+    top:232px;
+    width:696px;
+    height:376px;
+    padding:12px 11px 10px 11px;
+    background:var(--surface-tint);
+    border:1px solid var(--card-border);
+    border-radius:var(--card-radius);
+    box-shadow:var(--shadow-card);
+    overflow:hidden;
+    z-index:2;
+  }
+  .tbl-cap{
+    height:24px;
+    margin:0 1px 9px 1px;
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .tbl-no{
+    font-size:var(--fs-caption);
+    line-height:1.2;
+    font-weight:700;
+    letter-spacing:1.2px;
+    color:var(--teal-text);
+    font-variant-numeric:tabular-nums;
+  }
+  .tbl-name{
+    font-size:18px;
+    line-height:1.3;
+    font-weight:600;
+    color:var(--text-primary);
+    letter-spacing:.01em;
+  }
+  table.tbl{
+    width:672px;
+    height:286px;
+    table-layout:fixed;
+    border-collapse:collapse;
+  }
+  table.tbl col.c1{width:100px;}
+  table.tbl col.c2{width:256px;}
+  table.tbl col.c3{width:316px;}
+  table.tbl thead th{
+    height:36px;
+    padding:0 16px;
+    background:var(--surface-tint);
+    border-top:2px solid var(--accent-1);
+    border-bottom:1px solid var(--border-strong);
+    text-align:left;
+    vertical-align:middle;
+    font-size:var(--fs-table-head);
+    line-height:1.3;
+    font-weight:700;
+    letter-spacing:.12em;
+    color:var(--text-primary);
+  }
+  table.tbl tbody td{
+    height:62px;
+    padding:9px 16px;
+    vertical-align:middle;
+    font-size:16px;
+    line-height:1.7;
+  }
+  table.tbl tbody tr:nth-child(odd){background:var(--surface-band-deep);}
+  table.tbl tbody tr:nth-child(even){background:var(--surface-tint);}
+  table.tbl tbody tr:last-child td{box-shadow:inset 0 -1px 0 0 var(--border-strong);}
+  td.c-stage{
+    font-weight:600;
+    color:var(--text-primary);
+    letter-spacing:.02em;
+    white-space:nowrap;
+  }
+  td.c-trad{color:var(--text-secondary);}
+  td.c-fail{color:var(--text-primary);}
+  .tbl-src{
+    margin:9px 1px 0 1px;
+    font-size:var(--fs-footnote);
+    line-height:1.5;
+    color:var(--teal-text);
+    letter-spacing:.02em;
+  }
+
+  /* ---------- 收口条 ---------- */
+  .verdict{
+    position:absolute;
+    left:110px;
+    top:620px;
+    width:1060px;
+    height:46px;
+    background:var(--surface-tint);
+    border:1px solid var(--card-border);
+    border-left:3px solid var(--accent-1);
+    border-radius:var(--card-radius);
+    display:flex;
+    align-items:center;
+    padding:0 18px;
+    z-index:2;
+  }
+  .v-tag{
+    font-size:var(--fs-tag);
+    line-height:1;
+    font-weight:700;
+    letter-spacing:2px;
+    color:var(--teal-text);
+    white-space:nowrap;
+    flex:0 0 auto;
+  }
+  .v-line{
+    margin-left:16px;
+    font-size:17px;
+    line-height:1.4;
+    font-weight:600;
+    color:var(--text-primary);
+    white-space:nowrap;
+    flex:0 0 auto;
+  }
+  .v-line .thr{
+    font-style:normal;
+    font-weight:700;
+    color:var(--orange-text);
+  }
+  .v-note{
+    margin-left:auto;
+    padding-left:24px;
+    font-size:var(--fs-footnote);
+    line-height:1.4;
+    font-weight:400;
+    color:var(--text-tertiary);
+    letter-spacing:.02em;
+    white-space:nowrap;
+  }
+
+  /* ---------- 页脚 ---------- */
+  .slide-footer{
+    position:absolute;
+    bottom:12px;
+    left:110px;
+    right:110px;
+    height:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    z-index:10;
+  }
+  .footer-section{
+    font-size:var(--fs-footnote);
+    line-height:1;
+    color:var(--text-secondary);
+    letter-spacing:.04em;
+  }
+  .footer-page{
+    font-size:var(--fs-footnote);
+    line-height:1;
+    color:var(--text-tertiary);
+    letter-spacing:.04em;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ---------- 版面配比微调 ---------- */
+  .rail{ height:376px !important; }
+  .tbl-card{ height:376px !important; }
+  table.tbl{ height:286px !important; }
+  table.tbl tbody td{ height:62px !important; }
+  .slide, body{ background:#EFF8F8 !important; }
+  .rail-card,.tbl-card{ background:#FFFFFF !important; }
+
+
+  /* ---------- 溢出收口 ---------- */
+  table.tbl tbody td{ height:auto !important; padding:3px 14px !important; line-height:1.45 !important; }
+  .tbl-src{ margin-top:5px !important; }
+
+
+  /* ---------- 参考稿底色：顶部浅青渐白 + 底部青绿带 ---------- */
+  body,.slide{
+    background:linear-gradient(180deg,#E6F6F6 0%,#EFF9F9 34%,#FFFFFF 72%) !important;
+  }
+  .tpl-band{
+    position:absolute; left:0; bottom:0; width:100%; height:38px;
+    background:linear-gradient(90deg,#00B2B0 0%,#27B1A4 100%);
+    z-index:3;
+  }
+  .slide-footer{ bottom:9px !important; z-index:12 !important; }
+  .slide-footer .footer-section,
+  .slide-footer .footer-page{ color:#FFFFFF !important; opacity:1 !important; }
+
+
+  /* ---------- 导语框对齐内容区 ---------- */
+  .tpl-lede{ left:110px !important; width:1060px !important; }
+  .tpl-rule,.header-rule,.deco-hairline,.header-spine,.hdr-rule{
+    left:110px !important; width:1060px !important;
+  }
+
+  /* ---------- 与第4页同宽：39—1253 ---------- */
+  .tpl-lede{ left:39px !important; width:1214px !important; }
+  .tpl-rule,.header-rule,.deco-hairline,.header-spine,.hdr-rule{
+    left:39px !important; width:1214px !important;
+  }
+  /* 三张小卡是 .rail 的弹性子项，位置必须从容器改 */
+  .rail{ left:39px !important; width:400px !important; }
+  [data-card-id="s3-anchor-1"]{ left:456px !important; width:797px !important; }
+  [data-card-id="s3-context-1"]{ left:39px !important; width:1214px !important; }
+  table.tbl{ width:100% !important; }
+  table.tbl col.c1{width:13% !important;}
+  table.tbl col.c2{width:34% !important;}
+  table.tbl col.c3{width:53% !important;}
+
+  /* ---------- 导语在框内垂直居中 ---------- */
+  .tpl-lede{ padding-top:16px !important; }
+  /* ---------- 去掉来源行后表格铺满卡内 ---------- */
+  .tbl-card{ display:flex !important; flex-direction:column !important; }
+  .tbl-card table.tbl{ flex:1 1 auto !important; height:auto !important; }
+</style>
+</head>
+<body>
+<div class="slide">
+
+  <div class="tpl-mark" aria-hidden="true"></div>
+
+  <header class="slide-header">
+    <h1 class="page-title" data-card-id="s3-title-1">1.1 负荷形态的三向变化</h1>
+    <span class="hdr-meta"><b>03 / 22</b><i>01 研究背景</i></span>
+  </header>
+
+  <div class="tpl-rule" aria-hidden="true"></div>
+
+  <p class="tpl-lede" data-card-id="s3-lede-1">随着分布式光伏、用户侧储能、电动汽车与热泵的快速渗透，配网负荷的构成、时间尺度与不确定性同时发生变化：<b>源荷边界趋于模糊</b>，预测需求下沉至台区级 15 分钟，极端天气与节假日调休带来缺乏先兆的结构性偏移。基于人工经验与固定规则建立的预测方法已难以满足上述要求。</p>
+
+  <section class="rail">
+
+    <article class="rail-card" data-card-id="s3-support-1">
+      <span class="rail-no">01</span>
+      <h3>源荷边界模糊</h3>
+      <p>光伏与储能接入后出现反向倒送、<br>午间低谷与晚峰陡升。</p>
+    </article>
+
+    <article class="rail-card card-tall" data-card-id="s3-support-2">
+      <span class="rail-no">02</span>
+      <h3>时空尺度更细</h3>
+      <div class="m-row">
+        <span class="m"><b>65</b><span class="u">万台</span><span class="l">公变</span></span>
+        <span class="m"><b>4.5</b><span class="u">万条</span><span class="l">馈线</span></span>
+      </div>
+      <p>台区级、15 分钟粒度，<br>超短期到中长期四类跨度并存。</p>
+    </article>
+
+    <article class="rail-card" data-card-id="s3-support-3">
+      <span class="rail-no">03</span>
+      <h3>不确定性突出</h3>
+      <p>寒潮骤升、春节反弹、台风强降水等情形，<br>均缺乏历史先兆可依。</p>
+    </article>
+
+  </section>
+
+  <section class="tbl-card" data-card-id="s3-anchor-1">
+    <div class="tbl-cap">
+      <span class="tbl-no">表1-1</span>
+      <span class="tbl-name">传统方法的四类局限</span>
+    </div>
+    <table class="tbl">
+      <colgroup>
+        <col class="c1"><col class="c2"><col class="c3">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>环节</th>
+          <th>传统做法</th>
+          <th>失效原因</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="c-stage">数据处理</td>
+          <td class="c-trad">人工筛查、固定阈值修补</td>
+          <td class="c-fail">海量台区难以逐一核查，缺采、反接、档案错配难以系统发现</td>
+        </tr>
+        <tr>
+          <td class="c-stage">负荷认知</td>
+          <td class="c-trad">按行业、用户类型人工分类</td>
+          <td class="c-fail">同一行业负荷形态差异大，无法刻画光伏渗透率、负载率</td>
+        </tr>
+        <tr>
+          <td class="c-stage">预测建模</td>
+          <td class="c-trad">统一模型或逐对象单独建模</td>
+          <td class="c-fail">统一模型精度低、泛化差；逐对象建模算力大、不稳定</td>
+        </tr>
+        <tr>
+          <td class="c-stage">结果评价</td>
+          <td class="c-trad">只看平均准确率</td>
+          <td class="c-fail">无法量化偏差成因，成因判断依赖人工经验，难以闭环</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="verdict" data-card-id="s3-context-1">
+    <span class="v-tag">规模上限</span>
+    <span class="v-line">上述四条路径均受限于<em class="thr">人工可覆盖的规模</em>。</span>
+    <span class="v-note">口径：公变台数，不含专变与低压台区</span>
+  </div>
+
+  <div class="tpl-band" aria-hidden="true"></div>
+
+  <footer class="slide-footer">
+    <span class="footer-section">AI 赋能中低压配网负荷预测全流程方法研究</span>
+    <span class="footer-page">江苏方天电力技术有限公司</span>
+  </footer>
+
+</div>
+</body>
+</html>

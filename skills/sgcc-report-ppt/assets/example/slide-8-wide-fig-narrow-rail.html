@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=720">
+<title>让模型学会「正常长什么样」，再用偏差判异常</title>
+<style>
+  :root{
+    --bg-primary:#FFFFFF;
+    --bg-secondary:#EFF8F8;
+    --card-bg-from:#EFF8F8;
+    --card-bg-to:#FBFEFD;
+    --card-border:#D7DCDA;
+    --card-radius:4px;
+    --text-primary:#1B2A2C;
+    --text-secondary:#59696C;
+    --text-tertiary:#66777A;
+    --accent-1:#009C9A;
+    --accent-2:#FF9700;
+    --accent-3:#00B0F0;
+    --accent-4:#2DB9BA;
+    --teal-text:#00726F;
+    --orange-text:#B36A00;
+    --hairline:#D7DCDA;
+    --hairline-soft:#E6EBE9;
+    --border-strong:#B1BBB7;
+    --surface-board:#EFF8F8;
+    --surface-muted:#E6EBE9;
+    --shadow-card:0 1px 2px rgba(0, 60, 58, 0.04);
+    --fs-overline:12px;
+    --fs-footnote:12px;
+    --fs-caption:12px;
+    --fs-tag:12px;
+    --font-primary:"Microsoft YaHei","微软雅黑","DengXian","等线","Source Han Sans SC","Noto Sans SC","PingFang SC",sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{margin:0;padding:0;}
+
+  body{
+    width:1280px;
+    height:720px;
+    overflow:hidden;
+    background:var(--surface-board);
+    font-family:var(--font-primary);
+    color:var(--text-primary);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    font-kerning:normal;
+    text-rendering:optimizeLegibility;
+  }
+
+  .slide{
+    position:relative;
+    width:1280px;
+    height:720px;
+    background:var(--surface-board);
+    overflow:hidden;
+  }
+
+  /* ---------- header ---------- */
+  .slide-header{
+    position:absolute;
+    top:20px;
+    left:110px;
+    right:110px;
+    height:72px;
+    z-index:10;
+  }
+  .slide-header::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    width:32px;
+    height:3px;
+    background:var(--accent-1);
+  }
+  .overline{
+    position:absolute;
+    left:0;
+    top:12px;
+    display:block;
+    font-size:var(--fs-overline);
+    line-height:1.2;
+    font-weight:700;
+    letter-spacing:2.2px;
+    color:var(--teal-text);
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .page-title{
+    position:absolute;
+    left:0;
+    top:25px;
+    margin:0;
+    font-size:37px;
+    line-height:1.22;
+    font-weight:600;
+    letter-spacing:0.005em;
+    color:var(--text-primary);
+    text-align:left;
+    white-space:nowrap;
+  }
+  .hdr-meta{
+    position:absolute;
+    right:0;
+    top:2px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:7px;
+  }
+  .hdr-meta b{
+    font-size:var(--fs-caption);
+    line-height:1;
+    font-weight:600;
+    color:var(--text-secondary);
+    letter-spacing:1.2px;
+    font-variant-numeric:tabular-nums;
+  }
+  .hdr-meta i{
+    font-style:normal;
+    font-size:var(--fs-overline);
+    line-height:1;
+    font-weight:700;
+    letter-spacing:2.2px;
+    color:var(--text-tertiary);
+  }
+
+  /* ---------- figure field (full-bleed white band) ---------- */
+  .figure-field{
+    position:absolute;
+    left:0;
+    top:102px;
+    width:1280px;
+    height:466px;
+    background:var(--bg-primary);
+    z-index:1;
+  }
+  .fig-card{
+    position:absolute;
+    left:110px;
+    top:102px;
+    width:1060px;
+    height:466px;
+    z-index:2;
+  }
+  .fig-card img{
+    display:block;
+    width:1060px;
+    height:466px;
+    object-fit:contain;
+    object-position:center center;
+  }
+
+  /* ---------- figure caption ---------- */
+  .fig-cap{
+    position:absolute;
+    left:110px;
+    top:571px;
+    width:1060px;
+    height:16px;
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+    font-size:var(--fs-caption);
+    line-height:1.2;
+    white-space:nowrap;
+    z-index:2;
+  }
+  .fc-no{
+    flex:0 0 auto;
+    font-weight:700;
+    letter-spacing:0.08em;
+    color:var(--teal-text);
+  }
+  .fc-flow{
+    flex:0 0 auto;
+    font-weight:400;
+    color:var(--text-secondary);
+    letter-spacing:0.01em;
+  }
+  .fc-src{
+    flex:0 0 auto;
+    margin-left:auto;
+    font-weight:400;
+    color:var(--text-tertiary);
+    letter-spacing:0.01em;
+  }
+
+  /* ---------- reading strip ---------- */
+  .note-strip{
+    position:absolute;
+    left:110px;
+    top:590px;
+    width:1060px;
+    height:76px;
+    display:flex;
+    align-items:stretch;
+    background:var(--surface-muted);
+    border:1px solid var(--card-border);
+    border-radius:var(--card-radius);
+    overflow:hidden;
+    z-index:2;
+  }
+  .note-cell{
+    position:relative;
+    padding:9px 18px 0 18px;
+    overflow:hidden;
+  }
+  .cell-judge{ width:350px; flex:0 0 350px; }
+  .cell-migrate{ width:350px; flex:0 0 350px; border-left:1px solid var(--card-border); }
+  .cell-quote{ flex:1 1 auto; background:var(--surface-tint, #EFF8F8); background-color:#EFF8F8; border-left:1px solid var(--card-border); box-shadow:inset 3px 0 0 0 var(--accent-2); }
+
+  .n-tag{
+    position:relative;
+    margin:0;
+    padding-left:14px;
+    font-size:12px;
+    line-height:1.1;
+    font-weight:700;
+    letter-spacing:1.6px;
+    color:var(--teal-text);
+    white-space:nowrap;
+  }
+  .n-tag::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:4px;
+    width:8px;
+    height:2px;
+    background:var(--accent-1);
+  }
+  .n-main{
+    margin:3px 0 0 0;
+    font-size:16px;
+    line-height:1.4;
+    font-weight:400;
+    letter-spacing:0.01em;
+    color:var(--text-primary);
+    white-space:nowrap;
+  }
+  .n-sub{
+    margin:2px 0 0 0;
+    font-size:12px;
+    line-height:1.4;
+    font-weight:400;
+    letter-spacing:0.01em;
+    color:var(--text-secondary);
+    white-space:nowrap;
+  }
+  .thr{
+    font-style:normal;
+    font-weight:700;
+    color:var(--orange-text);
+  }
+  .n-metric{
+    margin:2px 0 0 0;
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+    white-space:nowrap;
+  }
+  .n-metric b{
+    font-size:22px;
+    line-height:1.05;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    color:var(--accent-1);
+    font-variant-numeric:tabular-nums;
+  }
+  .n-metric span{
+    font-size:12px;
+    line-height:1.2;
+    font-weight:400;
+    color:var(--text-secondary);
+  }
+  .n-metric i{
+    font-style:normal;
+    font-size:12px;
+    line-height:1.2;
+    color:var(--border-strong);
+    margin:0 2px;
+  }
+  .n-quote{
+    margin:3px 0 0 0;
+    font-size:17px;
+    line-height:1.35;
+    font-weight:600;
+    letter-spacing:0.01em;
+    color:var(--teal-text);
+    white-space:nowrap;
+  }
+
+  /* ---------- footer ---------- */
+  .slide-footer{
+    position:absolute;
+    bottom:12px;
+    left:110px;
+    right:110px;
+    height:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    z-index:10;
+  }
+  .footer-section,
+  .footer-page{
+    font-size:var(--fs-footnote);
+    line-height:1;
+    color:var(--text-secondary);
+    opacity:0.55;
+    letter-spacing:1px;
+  }
+  .footer-page{
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ================= 模板内容页外壳（整体负荷预测.pptx） ================= */
+  .tpl-mark{
+    position:absolute;
+    left:37.8px; top:20.5px;
+    width:54.6px; height:54.6px;
+    border:1px solid #00C0C1;
+    z-index:6;
+  }
+  .tpl-mark::after{
+    content:"";
+    position:absolute;
+    left:18.3px; top:15.5px;
+    width:44px; height:44px;
+    background:#00C0C1;
+  }
+  .slide-header{
+    position:absolute !important;
+    left:110.8px !important; top:24.7px !important;
+    right:auto !important;
+    width:1060px !important; height:44px !important;
+  }
+  .slide-header::before{ display:none !important; }
+  .page-title{
+    position:static !important;
+    margin:0 !important;
+    font-size:37.33px !important;
+    line-height:1.2 !important;
+    font-weight:700 !important;
+    letter-spacing:.005em !important;
+    color:#00B2B0 !important;
+    text-align:left !important;
+    white-space:nowrap !important;
+  }
+  .overline{ display:none !important; }
+  .hdr-meta{
+    position:absolute !important;
+    right:-0.8px !important; top:-6px !important;
+    display:flex !important; flex-direction:column !important;
+    align-items:flex-end !important; gap:6px !important;
+  }
+  .deco-hairline,.header-rule,.hdr-rule,
+  .slide-header .rule,.header-spine{
+    left:88.2px !important; top:78.7px !important;
+    width:1191.8px !important; height:1.33px !important;
+    background:#00C0C1 !important;
+    z-index:4 !important;
+  }
+  .tpl-lede{
+    position:absolute;
+    left:38.9px; top:95.2px;
+    width:1214px; height:122px;
+    margin:0;
+    padding:7.5px 11.3px 4.8px 26.5px;
+    background:#FFFFFF;
+    border:1px solid #CCF2F2;
+    font-size:20px;
+    line-height:1.5;
+    font-weight:400;
+    color:var(--text-primary);
+    z-index:3;
+  }
+  .tpl-lede b{font-weight:700;}
+
+  /* ---------- 模板内容区 232—666 ---------- */
+  .fig-card{ top:232px !important; height:372px !important; }
+  .fig-card img{ width:100% !important; height:372px !important; }
+  .fig-cap{ top:608px !important; }
+  .note-strip{ top:628px !important; height:48px !important; }
+  .note-cell{ padding:5px 14px 4px 14px !important; }
+  .n-tag{ font-size:12px !important; margin-bottom:1px !important; }
+  .note-cell .n-main,.note-cell .n-quote{ font-size:14px !important; line-height:1.3 !important; }
+  .note-cell .n-metric{ font-size:14px !important; line-height:1.3 !important; }
+  .note-cell .n-sub{ display:none !important; }
+  .figure-field{ display:none !important; }
+
+  /* ---------- 版面配比微调 ---------- */
+  .slide, body{ background:#EFF8F8 !important; }
+  .fig-card{ background:#E6EBE9 !important; padding:8px 10px !important; border-radius:4px !important; }
+  .fig-card img{ height:356px !important; }
+  .note-strip{ background:#FFFFFF !important; }
+  .note-strip{ background:#E6EBE9 !important; }
+  .note-cell{ background:transparent !important; }
+
+
+
+  /* ---------- 参考稿底色：顶部浅青渐白 + 底部青绿带 ---------- */
+  body,.slide{
+    background:linear-gradient(180deg,#E6F6F6 0%,#EFF9F9 34%,#FFFFFF 72%) !important;
+  }
+  .tpl-band{
+    position:absolute; left:0; bottom:0; width:100%; height:38px;
+    background:linear-gradient(90deg,#00B2B0 0%,#27B1A4 100%);
+    z-index:3;
+  }
+  .slide-footer{ bottom:9px !important; z-index:12 !important; }
+  .slide-footer .footer-section,
+  .slide-footer .footer-page{ color:#FFFFFF !important; opacity:1 !important; }
+
+  /* ---------- 排版校准 ---------- */
+  .fig-card{ height:360px !important; }
+  .fig-cap{ top:596px !important; }
+  .note-strip{ top:616px !important; height:50px !important; }
+
+  /* ---------- 排版校准 2 ---------- */
+  .fig-card img{ height:348px !important; }
+
+
+  /* ---------- 导语框对齐内容区 ---------- */
+  .tpl-lede{ left:110px !important; width:1060px !important; }
+  .tpl-rule,.header-rule,.deco-hairline,.header-spine,.hdr-rule{
+    left:110px !important; width:1060px !important;
+  }
+
+  /* ---------- 与第4页同宽：39—1253 ---------- */
+  .tpl-lede{ left:39px !important; width:1214px !important; }
+  .tpl-rule,.header-rule,.deco-hairline,.header-spine,.hdr-rule{
+    left:39px !important; width:1214px !important;
+  }
+  .fig-card{ left:39px !important; width:1214px !important; }
+  .note-strip{ left:39px !important; width:1214px !important; }
+  .cell-judge{ width:401px !important; flex:0 0 401px !important; }
+  .cell-migrate{ width:401px !important; flex:0 0 401px !important; }
+
+  /* ---------- 导语在框内垂直居中 ---------- */
+  .tpl-lede{ padding-top:31px !important; }
+  /* ---------- 图卡按图比例定宽，读法三卡竖排到右侧 ---------- */
+  .fig-card{ left:39px !important; width:927px !important; top:232px !important; height:434px !important; }
+  .fig-card img{ width:100% !important; height:100% !important; object-fit:contain !important; }
+  .note-strip{ left:982px !important; width:271px !important; top:232px !important;
+               height:434px !important; flex-direction:column !important; }
+  .cell-judge,.cell-migrate{ width:auto !important; flex:1 1 0 !important;
+               border-left:none !important; border-top:1px solid var(--card-border) !important; }
+  .cell-judge{ border-top:none !important; }
+  .cell-quote{ flex:1 1 0 !important; border-left:none !important;
+               border-top:1px solid var(--card-border) !important; }
+  .note-cell .n-main,.note-cell .n-quote,.note-cell .n-metric{ white-space:normal !important; }
+  /* ---------- 图注落到图卡底部 ---------- */
+  .fig-card img{ width:100% !important; height:calc(100% - 26px) !important;
+                 object-fit:contain !important; object-position:top center !important; }
+  .fig-cap{ top:641px !important; left:49px !important; width:900px !important; }
+  /* ---------- 右侧三卡内容在格内居中 ---------- */
+  .note-cell{ display:flex !important; flex-direction:column !important;
+             justify-content:center !important; }
+</style>
+</head>
+<body>
+<div class="slide">
+
+  <div class="tpl-mark" aria-hidden="true"></div>
+
+  <header class="slide-header">
+    <span class="overline">02.1 事前 · 数据治理</span>
+    <h1 class="page-title" data-card-id="s7-title-1">2.1.2 数据异常识别与缺失填补</h1>
+    <span class="hdr-meta"><b>08 / 22</b><i>02.1 事前</i></span>
+  </header>
+
+  <p class="tpl-lede" data-card-id="s7-lede-1">方法思路为<b>先由模型学习正常负荷形态</b>。以源场景 69 个台区的日曲线开展自监督样本构造，使模型在上下文中学习形态规律；在目标场景仅使用 14 天数据进行微调，并以本站残差尺度自适应判定异常，最终由显式规则协同兜底。</p>
+
+  <div class="figure-field" aria-hidden="true"></div>
+
+  <section class="fig-card" data-card-id="s7-anchor-1">
+    <img src="../images/fig3-1.png" alt="图3-1 AI 数据治理：迁移学习驱动的自动识别与填补——源场景、跨场景治理模型、目标场景、输出四段链路，下附「为什么比规则方法更 AI」四条与「自监督训练样本构造」四条">
+  </section>
+
+  <div class="fig-cap">
+    <span class="fc-no">图 3-1</span>
+    <span class="fc-flow">源场景 &rarr; 跨场景治理模型 &rarr; 目标场景 &rarr; 输出</span>
+    <span class="fc-src">来源：1026.docx §3.1.2—3.1.3</span>
+  </div>
+
+  <section class="note-strip">
+
+    <div class="note-cell cell-judge" data-card-id="s7-support-1">
+      <p class="n-tag">自适应阈值</p>
+      <p class="n-main">以本站残差中位数 <em class="thr">×1.4826</em> 作为尺度</p>
+      <p class="n-sub">单点 <em class="thr">&gt;5 倍</em>判为异常点；连续 3 点均值 <em class="thr">&gt;3.5 倍</em>判为异常段</p>
+    </div>
+
+    <div class="note-cell cell-migrate" data-card-id="s7-support-2">
+      <p class="n-tag">跨场景迁移</p>
+      <p class="n-metric"><b>69</b><span>个源台区</span><i>&rarr;</i><b>14</b><span>天微调</span></p>
+      <p class="n-sub">准备 14 天数据即可上线，无需重新设计规则</p>
+    </div>
+
+    <div class="note-cell cell-quote" data-card-id="s7-context-1">
+      <p class="n-tag">迁移边界</p>
+      <p class="n-quote">形态先验可迁移、数值水平不可迁移</p>
+      <p class="n-sub">目标场景仍需 14 天本地数据微调</p>
+    </div>
+
+  </section>
+
+  <div class="tpl-band" aria-hidden="true"></div>
+
+  <footer class="slide-footer">
+    <span class="footer-section">AI 赋能中低压配网负荷预测全流程方法研究</span>
+    <span class="footer-page">江苏方天电力技术有限公司</span>
+  </footer>
+
+</div>
+</body>
+</html>
