@@ -2,7 +2,7 @@
 
 > 适用对象：需要使用本技能制作/改造「国网（电网）汇报 PPT」的同事
 > 配套文件：`sgcc-report-ppt.skill`（技能分发包，本质是一个 zip）
-> 版本：v1.3 ｜ 2026-11-06
+> 版本：v1.4 ｜ 2026-11-06
 
 ---
 
@@ -152,13 +152,14 @@ python scripts/visual_qa.py demo.png assets/example/slide-demo-three-tier.html
 
 ## 1. 这是什么
 
-`sgcc-report-ppt` 是**国网汇报 PPT 的风格层 + 交付流水线**，不是一个独立的 PPT 生成引擎：
+`sgcc-report-ppt` 的核心是**国网汇报 PPT 的风格与写作规范**，同时内置一条能独立跑通的轻量流程和交付流水线：
 
 - **风格合同**：标题「编号 + 判断句」、左图卡 + 右栏两种主布局、正式书面口吻、1280×720 画布；
+- **轻量流程**：开工四问（受众 / 页数 / 素材 / 口径）→ 大纲确认 → 样张确认 → 改稿先给草稿；
 - **交付流水线**：HTML 幻灯片 → Playwright 渲染（1× 供检查、3× 供出图）→ 视觉 QA → 组包成 PPTX；
 - **配套脚本**：单页 QA、整册核对、删页重排、图片内文字替换、PPTX 组包。
 
-它与 `ppt-agent`（负责需求调研、大纲、逐页生产）配合使用：ppt-agent 管流程，本技能管风格与交付；也可以单独用来改造已有的 HTML / PPTX。
+它与 `ppt-agent` 是叠加而非替代：ppt-agent 负责联网调研、大纲生成、多 subagent 并行生产；本技能负责风格约束、过程确认与交付，也可以单独使用（含改造已有的 HTML / PPTX）。
 
 ---
 
@@ -344,6 +345,7 @@ python scripts/deck_audit.py . deck.pptx
 
 | 版本 | 日期 | 变更 |
 |---|---|---|
+| v1.4 | 2026-11-06 | 新增「开工前四问」与三个确认点（G1 大纲 / G2 样张 / G3 改稿）；离线安装包支持交给 AI 客户端自行安装 |
 | v1.3 | 2026-11-06 | `shot.py` 支持浏览器回退（自带 Chromium → 系统 Edge → Chrome），内网无需下载浏览器；新增第 0.3 节内网 / 离线安装 |
 | v1.2 | 2026-11-06 | 技能发布到 GitHub；新增 `npx skills add AnTi-anti/ft-ppt-agent-skills` 安装方式（实测可发现技能） |
 | v1.1 | 2026-11-05 | 新增 `deck_audit.py`、`delete_slide.py`、`patch_png_text.py`；`visual_qa.py` 增加导语条留白检查；`pitfalls.md` 扩至 17 条；`workflow.md` 增加改稿章节；移除旧 `visual_qa_local.py` |
