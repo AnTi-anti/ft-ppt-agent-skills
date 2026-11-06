@@ -65,6 +65,61 @@ python -m playwright install chromium
 
 安装后新开一次会话，输入 `/` 应能看到 `sgcc-report-ppt`。
 
+### 内网 / 离线安装
+
+`npx skills add` 要访问 npm registry 与 GitHub，内网用不了也没关系——技能就是一组文件，放对位置就能用。
+
+**1. 技能文件**
+
+```bash
+# 有网机器
+git clone https://github.com/AnTi-anti/ft-ppt-agent-skills.git
+
+# 拷到内网机器后
+cp -r ft-ppt-agent-skills/skills/sgcc-report-ppt ~/.claude/skills/
+```
+
+也可以用 `.skill` 包（本质是 zip）：解压到 `~/.claude/skills/`，保证存在 `sgcc-report-ppt/SKILL.md` 这一层。U 盘、共享盘、内网 Git 镜像都行。
+
+**2. Python 依赖（在有网机器上先下 wheel）**
+
+```bash
+pip download -d wheels playwright python-pptx pillow
+# 把 wheels/ 拷到内网机器
+pip install --no-index --find-links wheels playwright python-pptx pillow
+```
+
+内网有 PyPI 镜像时，直接 `pip install -i <镜像地址> ...` 更省事。
+
+**3. 浏览器：不用下载**
+
+`shot.py` 按这个顺序找浏览器：`SHOT_CHANNEL` 指定 → Playwright 自带 Chromium → 系统 Microsoft Edge（Windows 自带）→ Google Chrome。所以内网机器只要有 Edge 就能渲染：
+
+```bash
+SHOT_CHANNEL=msedge python scripts/shot.py slides/slide-1.html png/slide-1.png 1
+```
+
+不指定也可以：找不到 Chromium 会自动回退到 Edge，stderr 会打印实际用了哪个。
+
+**4. 如果一定要用 Playwright 自带 Chromium**
+
+有网机器执行 `playwright install chromium`，把浏览器目录整体拷贝过去：
+
+- Windows：`%LOCALAPPDATA%\ms-playwright`
+- macOS：`~/Library/Caches/ms-playwright`
+- Linux：`~/.cache/ms-playwright`
+
+目标机设置 `PLAYWRIGHT_BROWSERS_PATH=<该目录>` 即可。
+
+**5. 验证**
+
+```bash
+python scripts/shot.py assets/example/slide-4-left-fig-right-rail.html demo.png 1
+python scripts/visual_qa.py demo.png assets/example/slide-4-left-fig-right-rail.html
+```
+
+`status` 为 `WARN` 或 `PASS`（无 `FAIL`）即安装成功。目标机需要「微软雅黑」字体，否则排版会走样。
+
 ## 核心亮点
 
 **风格合同，而不是风格建议**：标题必须是「编号 + 判断句」，页面只有「左图卡 + 右栏」与「整幅图 + 窄栏」两种主布局，正文字号有下限（≥10px），导语条上下留白有目标值。每一条都写成了 `visual_qa.py` 能断言的规则，不是文档里的形容词。

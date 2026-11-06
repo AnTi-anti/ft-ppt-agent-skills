@@ -2,7 +2,7 @@
 
 > 适用对象：需要使用本技能制作/改造「国网（电网）汇报 PPT」的同事
 > 配套文件：`sgcc-report-ppt.skill`（技能分发包，本质是一个 zip）
-> 版本：v1.2 ｜ 2026-11-06
+> 版本：v1.3 ｜ 2026-11-06
 
 ---
 
@@ -62,6 +62,22 @@ npx skills add AnTi-anti/ft-ppt-agent-skills
 - **npx 只装技能文件，不装 Python 依赖**，装完仍需执行第 2 节的 `pip install ...` 与 `playwright install chromium`；
 - 需要能访问 npm registry 与 GitHub；内网受限时改用第 0 节的离线安装方式；
 - **客户端支持程度**：实现了 Agent Skills（SKILL.md）规范的客户端可自动安装并触发；只支持规则文件的客户端，可把 SKILL.md 当作规则喂入；无论哪种，`scripts/` 里的 Python 脚本与客户端无关，照常可用。
+
+## 0.3 内网 / 离线环境
+
+不能联网时，跳过第 0.2 节，按下面四步做：
+
+1. **技能文件**：把 `sgcc-report-ppt` 整个文件夹拷进客户端的技能目录（Claude Code 为 `~/.claude/skills/`）；或用 `sgcc-report-ppt.skill`（本质是 zip）解压，保证 `sgcc-report-ppt/SKILL.md` 这一层存在。U 盘、共享盘、内网 Git 都可。
+2. **Python 依赖**：在有网机器上 `pip download -d wheels playwright python-pptx pillow`，把 `wheels/` 拷过去后执行 `pip install --no-index --find-links wheels playwright python-pptx pillow`；内网有 PyPI 镜像时直接用 `-i <镜像地址>` 安装。
+3. **浏览器**：**不需要 `playwright install chromium`**。`shot.py` 会依次尝试 Playwright 自带 Chromium → 系统 Microsoft Edge → 系统 Google Chrome，也可用 `SHOT_CHANNEL=msedge` 强制指定。若确实要用自带 Chromium，可把有网机器的 `%LOCALAPPDATA%\ms-playwright` 整个拷过去并设置 `PLAYWRIGHT_BROWSERS_PATH`。
+4. **自检**：
+
+   ```bash
+   python scripts/shot.py assets/example/slide-4-left-fig-right-rail.html demo.png 1
+   python scripts/visual_qa.py demo.png assets/example/slide-4-left-fig-right-rail.html
+   ```
+
+   `status` 为 `PASS` 或 `WARN`（无 `FAIL`）即安装成功。目标机需要「微软雅黑」字体，否则排版走样。
 
 ## 0.1 手动安装（备选，5 步）
 
@@ -294,6 +310,7 @@ python scripts/deck_audit.py . deck.pptx
 
 | 版本 | 日期 | 变更 |
 |---|---|---|
+| v1.3 | 2026-11-06 | `shot.py` 支持浏览器回退（自带 Chromium → 系统 Edge → Chrome），内网无需下载浏览器；新增第 0.3 节内网 / 离线安装 |
 | v1.2 | 2026-11-06 | 技能发布到 GitHub；新增 `npx skills add AnTi-anti/ft-ppt-agent-skills` 安装方式（实测可发现技能） |
 | v1.1 | 2026-11-05 | 新增 `deck_audit.py`、`delete_slide.py`、`patch_png_text.py`；`visual_qa.py` 增加导语条留白检查；`pitfalls.md` 扩至 17 条；`workflow.md` 增加改稿章节；移除旧 `visual_qa_local.py` |
 | v1.0 | 2026-10 | 首版：风格合同、布局 A/B、渲染/QA/组包流水线、三张样例页 |
