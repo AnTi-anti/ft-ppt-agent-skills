@@ -114,8 +114,8 @@ SHOT_CHANNEL=msedge python scripts/shot.py slides/slide-1.html png/slide-1.png 1
 **5. 验证**
 
 ```bash
-python scripts/shot.py assets/example/slide-4-left-fig-right-rail.html demo.png 1
-python scripts/visual_qa.py demo.png assets/example/slide-4-left-fig-right-rail.html
+python scripts/shot.py assets/example/slide-demo-three-tier.html demo.png 1
+python scripts/visual_qa.py demo.png assets/example/slide-demo-three-tier.html
 ```
 
 `status` 为 `WARN` 或 `PASS`（无 `FAIL`）即安装成功。目标机需要「微软雅黑」字体，否则排版会走样。

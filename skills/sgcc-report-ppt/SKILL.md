@@ -25,7 +25,7 @@ description: 国网/电网系统正式汇报 PPT 的风格层与交付流水线�
 | 实战踩坑与修法（类名冲突、替换 MISS、图片比例…） | `references/pitfalls.md` |
 | 完整命令流水线 | `references/workflow.md` |
 | 安装、环境依赖、他人如何上手 | `references/install.md` |
-| 可参照的成品页 | `assets/example/slide-4-left-fig-right-rail.html`、`slide-8-wide-fig-narrow-rail.html`、`slide-3-section-toc.html` |
+| 可参照的成品页 | `assets/example/slide-demo-three-tier.html`（自包含，无外部图片，自检用）、`slide-4-left-fig-right-rail.html`、`slide-8-wide-fig-narrow-rail.html`、`slide-3-section-toc.html` |
 
 ## 不可协商的风格合同
 

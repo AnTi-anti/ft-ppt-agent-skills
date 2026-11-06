@@ -73,8 +73,8 @@ npx skills add AnTi-anti/ft-ppt-agent-skills
 4. **自检**：
 
    ```bash
-   python scripts/shot.py assets/example/slide-4-left-fig-right-rail.html demo.png 1
-   python scripts/visual_qa.py demo.png assets/example/slide-4-left-fig-right-rail.html
+   python scripts/shot.py assets/example/slide-demo-three-tier.html demo.png 1
+   python scripts/visual_qa.py demo.png assets/example/slide-demo-three-tier.html
    ```
 
    `status` 为 `PASS` 或 `WARN`（无 `FAIL`）即安装成功。目标机需要「微软雅黑」字体，否则排版走样。

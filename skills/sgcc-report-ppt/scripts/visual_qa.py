@@ -21,6 +21,8 @@ import sys
 from PIL import Image
 from playwright.sync_api import sync_playwright
 
+from _browser import open_browser
+
 
 def main():
     args = sys.argv[1:]
@@ -73,7 +75,7 @@ def main():
 
     # ---------- DOM ----------
     with sync_playwright() as p:
-        b = p.chromium.launch()
+        b = open_browser(p, quiet=True)
         ctx = b.new_context(viewport={"width": 1280, "height": 720})
         pg = ctx.new_page()
         pg.goto("file:///" + os.path.abspath(html).replace("\\", "/"), wait_until="load")

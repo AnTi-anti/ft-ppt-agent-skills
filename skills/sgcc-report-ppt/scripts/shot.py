@@ -4,37 +4,14 @@
 渲染契约：视口 1280×720，deviceScaleFactor = scale，截图区域固定 1280×720，
 等待 document.fonts.ready 之后再截。
 
-浏览器选择顺序：
-  1. SHOT_CHANNEL 环境变量指定（"chromium" / "msedge" / "chrome"）
-  2. Playwright 自带 Chromium
-  3. 系统已安装的 Microsoft Edge（Windows 自带，内网离线环境无需下载浏览器）
-  4. 系统已安装的 Google Chrome
+浏览器选择见 _browser.py：SHOT_CHANNEL → 自带 Chromium → 系统 Edge → Chrome。
 """
-import os
 import sys
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-ARGS = ["--font-render-hinting=none", "--disable-gpu"]
-
-
-def open_browser(p):
-    forced = (os.environ.get("SHOT_CHANNEL") or "").strip()
-    order = [forced] if forced else [None, "msedge", "chrome"]
-    last = None
-    for ch in order:
-        kw = {"args": ARGS}
-        if ch and ch != "chromium":
-            kw["channel"] = ch
-        try:
-            b = p.chromium.launch(**kw)
-            if ch and ch != "chromium":
-                print("[info] 使用系统浏览器 channel=%s" % ch, file=sys.stderr)
-            return b
-        except Exception as e:  # noqa: BLE001 - 逐个回退
-            last = e
-    raise last
+from _browser import open_browser
 
 
 def main() -> int:
