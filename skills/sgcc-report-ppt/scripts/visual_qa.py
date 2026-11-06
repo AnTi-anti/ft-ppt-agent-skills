@@ -191,6 +191,38 @@ def main():
         else:
             ok("all card children contained in card bounds")
 
+        # content-area bounds (layout library L1-L8 must stay inside y 232-666)
+        zone = pg.evaluate("""() => {
+            const bad=[], early=[];
+            let maxBottom=0, maxDesc='';
+            document.querySelectorAll('body *').forEach(el=>{
+                if(el.closest('svg')) return;
+                const cs=getComputedStyle(el);
+                if(cs.display==='none'||cs.visibility==='hidden') return;
+                const tag=el.tagName.toLowerCase();
+                if(tag==='html'||tag==='body') return;
+                const r=el.getBoundingClientRect();
+                if(r.width<=0||r.height<=0) return;
+                const desc=tag+(typeof el.className==='string'&&el.className?'.'+el.className.trim().split(/\\s+/)[0]:'');
+                if(r.top>=666) return;              // 页脚及以下：不是内容
+                if(r.top<232){                      // 外壳区域：只看是否下探进内容区
+                    if(r.top>=218 && r.top<226 && r.height>8 && r.width>100) early.push(desc+' top='+Math.round(r.top));
+                    return;
+                }
+                if(r.bottom>maxBottom){maxBottom=r.bottom;maxDesc=desc;}
+                if(r.bottom>680) bad.push(desc+' bottom='+Math.round(r.bottom));
+            });
+            return {maxBottom:Math.round(maxBottom),maxDesc,bad:bad.slice(0,5),early:early.slice(0,3)};
+        }""")
+        if zone["bad"]:
+            fail("content exceeds y=680 (overlaps footer): %s" % "; ".join(zone["bad"]))
+        elif zone["maxBottom"] > 667:
+            warn("content ends at y=%d, tighter than the 666 grid (footer starts 686)" % zone["maxBottom"])
+        else:
+            ok("content inside y 232-666 (lowest %dpx: %s)" % (zone["maxBottom"], zone["maxDesc"]))
+        if zone["early"]:
+            warn("content starts below y=218 / above 226 (overlaps lede gap): %s" % "; ".join(zone["early"]))
+
         # title vs header meta overlap
         overlap = pg.evaluate("""() => {
             const a=document.querySelector('.page-title'), b=document.querySelector('.hdr-meta, .header-meta');
