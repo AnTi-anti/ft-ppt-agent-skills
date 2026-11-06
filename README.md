@@ -67,58 +67,62 @@ python -m playwright install chromium
 
 ### 内网 / 离线安装
 
-`npx skills add` 要访问 npm registry 与 GitHub，内网用不了也没关系——技能就是一组文件，放对位置就能用。
+内网访问不了 npm 与 GitHub，`npx skills add` 用不了。改用**离线安装包**——把它交给 AI 客户端，客户端自己就装好了。
 
-**1. 技能文件**
+#### 方式一：交给 AI 客户端（推荐）
+
+1. 取得离线包 `sgcc-report-ppt-offline-v1.4.zip`（约 140 MB，由发布方提供，不在仓库内）。
+2. 把包拖进客户端，或直接给出文件路径，然后说一句：
+
+   > 按包里的 `AGENTS.md` 把 sgcc-report-ppt 装到本机，装完自己验证一遍，告诉我结果。
+
+3. 客户端会读 `AGENTS.md`，依次完成：检查 Python → 选技能目录 → 运行 `install-offline.py` → 渲染示例页自检 → 回报结果。
+4. 新开一次会话，输入 `/`，应能看到 `sgcc-report-ppt`。
+
+#### 方式二：自己双击
+
+解压到固定目录 → 双击 `安装.bat` → 看到 `自检结果: status: PASS` → 新开会话。
+
+> 不要在压缩包里直接双击，Windows 的只读临时目录会导致安装失败。
+
+#### 包里为什么能离线
+
+| 组成 | 作用 |
+|---|---|
+| `AGENTS.md` / `CLAUDE.md` | 给 AI 客户端的安装步骤与红线 |
+| `install-offline.py` | 安装器：`pip --no-index` 装依赖、复制技能、跑自检 |
+| `wheels/` | playwright / python-pptx / pillow 及其依赖，覆盖 Python 3.9–3.14 |
+| `sgcc-report-ppt/` | 技能本体 |
+| `安装.bat`、`离线安装说明.md` | 给人用的入口与说明 |
+
+浏览器也不需要下载：`shot.py` 与 `visual_qa.py` 共用 `scripts/_browser.py`，按
+`SHOT_CHANNEL` → 自带 Chromium → 系统 Edge → 系统 Chrome 的顺序回退，Windows 自带 Edge 即可渲染。
+
+#### 前提与限制
+
+- **目标机需自备 Python 3.9–3.14**（包内是 wheel，不含解释器）；
+- 客户端需能**执行命令**；纯对话客户端做不到，只能人工双击 `安装.bat`；
+- 离线包为 **Windows x64**；
+- 目标机需有「微软雅黑」字体，否则排版走样。
+
+#### 不用安装器时的手工步骤
 
 ```bash
-# 有网机器
-git clone https://github.com/AnTi-anti/ft-ppt-agent-skills.git
+# 依赖：从包内 wheels 离线安装
+python -m pip install --no-index --find-links wheels playwright python-pptx pillow
 
-# 拷到内网机器后
-cp -r ft-ppt-agent-skills/skills/sgcc-report-ppt ~/.claude/skills/
+# 技能：复制目录（保证存在 sgcc-report-ppt/SKILL.md 这一层）
+cp -r sgcc-report-ppt ~/.claude/skills/
 ```
 
-也可以用 `.skill` 包（本质是 zip）：解压到 `~/.claude/skills/`，保证存在 `sgcc-report-ppt/SKILL.md` 这一层。U 盘、共享盘、内网 Git 镜像都行。
-
-**2. Python 依赖（在有网机器上先下 wheel）**
-
-```bash
-pip download -d wheels playwright python-pptx pillow
-# 把 wheels/ 拷到内网机器
-pip install --no-index --find-links wheels playwright python-pptx pillow
-```
-
-内网有 PyPI 镜像时，直接 `pip install -i <镜像地址> ...` 更省事。
-
-**3. 浏览器：不用下载**
-
-`shot.py` 按这个顺序找浏览器：`SHOT_CHANNEL` 指定 → Playwright 自带 Chromium → 系统 Microsoft Edge（Windows 自带）→ Google Chrome。所以内网机器只要有 Edge 就能渲染：
-
-```bash
-SHOT_CHANNEL=msedge python scripts/shot.py slides/slide-1.html png/slide-1.png 1
-```
-
-不指定也可以：找不到 Chromium 会自动回退到 Edge，stderr 会打印实际用了哪个。
-
-**4. 如果一定要用 Playwright 自带 Chromium**
-
-有网机器执行 `playwright install chromium`，把浏览器目录整体拷贝过去：
-
-- Windows：`%LOCALAPPDATA%\ms-playwright`
-- macOS：`~/Library/Caches/ms-playwright`
-- Linux：`~/.cache/ms-playwright`
-
-目标机设置 `PLAYWRIGHT_BROWSERS_PATH=<该目录>` 即可。
-
-**5. 验证**
+验证：
 
 ```bash
 python scripts/shot.py assets/example/slide-demo-three-tier.html demo.png 1
 python scripts/visual_qa.py demo.png assets/example/slide-demo-three-tier.html
 ```
 
-`status` 为 `WARN` 或 `PASS`（无 `FAIL`）即安装成功。目标机需要「微软雅黑」字体，否则排版会走样。
+`status` 为 `PASS` 或 `WARN`（无 `FAIL`）即安装成功。
 
 ## 核心亮点
 

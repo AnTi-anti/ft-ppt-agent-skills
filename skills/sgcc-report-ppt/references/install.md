@@ -37,48 +37,6 @@ python install.py -y            # 覆盖旧版本时不再询问
 
 > 说明：Claude Code 目前没有类似 `npm install` 的技能仓库，个人技能就是 `~/.claude/skills/` 下的文件夹；本脚本把「解压 + 放对位置 + 装依赖 + 自检」合成了一步，等同于 npm 式安装的体验。
 
-## 0.2 通过 npx skills 安装（跨客户端，已发布）
-
-技能已发布到 Git 仓库：**https://github.com/AnTi-anti/ft-ppt-agent-skills**
-
-任何支持 Agent Skills 的 AI 客户端，一条命令即可安装：
-
-```bash
-npx skills add AnTi-anti/ft-ppt-agent-skills
-```
-
-常用参数（实测于 skills CLI，最新参数以 `npx skills --help` 为准）：
-
-| 参数 | 作用 |
-|---|---|
-| `-l` | 只列出仓库里有哪些技能，不安装 |
-| `-g -y` | 装到用户级目录，跳过确认 |
-| `--copy` | 复制文件而不是软链接 |
-| `-a <agent>` | 指定客户端；`--all` = 全部客户端 |
-
-说明：
-
-- 仓库结构为 `skills/sgcc-report-ppt/SKILL.md`，CLI 可直接发现（`Found 1 skill`）；
-- **npx 只装技能文件，不装 Python 依赖**，装完仍需执行第 2 节的 `pip install ...` 与 `playwright install chromium`；
-- 需要能访问 npm registry 与 GitHub；内网受限时改用第 0 节的离线安装方式；
-- **客户端支持程度**：实现了 Agent Skills（SKILL.md）规范的客户端可自动安装并触发；只支持规则文件的客户端，可把 SKILL.md 当作规则喂入；无论哪种，`scripts/` 里的 Python 脚本与客户端无关，照常可用。
-
-## 0.3 内网 / 离线环境
-
-不能联网时，跳过第 0.2 节，按下面四步做：
-
-1. **技能文件**：把 `sgcc-report-ppt` 整个文件夹拷进客户端的技能目录（Claude Code 为 `~/.claude/skills/`）；或用 `sgcc-report-ppt.skill`（本质是 zip）解压，保证 `sgcc-report-ppt/SKILL.md` 这一层存在。U 盘、共享盘、内网 Git 都可。
-2. **Python 依赖**：在有网机器上 `pip download -d wheels playwright python-pptx pillow`，把 `wheels/` 拷过去后执行 `pip install --no-index --find-links wheels playwright python-pptx pillow`；内网有 PyPI 镜像时直接用 `-i <镜像地址>` 安装。
-3. **浏览器**：**不需要 `playwright install chromium`**。`shot.py` 会依次尝试 Playwright 自带 Chromium → 系统 Microsoft Edge → 系统 Google Chrome，也可用 `SHOT_CHANNEL=msedge` 强制指定。若确实要用自带 Chromium，可把有网机器的 `%LOCALAPPDATA%\ms-playwright` 整个拷过去并设置 `PLAYWRIGHT_BROWSERS_PATH`。
-4. **自检**：
-
-   ```bash
-   python scripts/shot.py assets/example/slide-demo-three-tier.html demo.png 1
-   python scripts/visual_qa.py demo.png assets/example/slide-demo-three-tier.html
-   ```
-
-   `status` 为 `PASS` 或 `WARN`（无 `FAIL`）即安装成功。目标机需要「微软雅黑」字体，否则排版走样。
-
 ## 0.1 手动安装（备选，5 步）
 
 1. **安装并登录 Claude Code**（桌面版或 `npm i -g @anthropic-ai/claude-code`）。
@@ -115,6 +73,82 @@ npx skills add AnTi-anti/ft-ppt-agent-skills
 > 新机器常见坑：忘了 `playwright install chromium`；`python` 未加入 PATH；技能目录多套了一层文件夹；中文报错未设 `PYTHONIOENCODING=utf-8`。详见第 7 节。
 
 ---
+
+## 0.2 通过 npx skills 安装（跨客户端，已发布）
+
+技能已发布到 Git 仓库：**https://github.com/AnTi-anti/ft-ppt-agent-skills**
+
+任何支持 Agent Skills 的 AI 客户端，一条命令即可安装：
+
+```bash
+npx skills add AnTi-anti/ft-ppt-agent-skills
+```
+
+常用参数（实测于 skills CLI，最新参数以 `npx skills --help` 为准）：
+
+| 参数 | 作用 |
+|---|---|
+| `-l` | 只列出仓库里有哪些技能，不安装 |
+| `-g -y` | 装到用户级目录，跳过确认 |
+| `--copy` | 复制文件而不是软链接 |
+| `-a <agent>` | 指定客户端；`--all` = 全部客户端 |
+
+说明：
+
+- 仓库结构为 `skills/sgcc-report-ppt/SKILL.md`，CLI 可直接发现（`Found 1 skill`）；
+- **npx 只装技能文件，不装 Python 依赖**，装完仍需执行第 2 节的 `pip install ...` 与 `playwright install chromium`；
+- 需要能访问 npm registry 与 GitHub；内网受限时改用第 0 节的离线安装方式；
+- **客户端支持程度**：实现了 Agent Skills（SKILL.md）规范的客户端可自动安装并触发；只支持规则文件的客户端，可把 SKILL.md 当作规则喂入；无论哪种，`scripts/` 里的 Python 脚本与客户端无关，照常可用。
+
+## 0.3 内网 / 离线环境（离线安装包）
+
+内网访问不到 npm 与 GitHub，第 0.2 节用不了。改用离线安装包：
+`sgcc-report-ppt-offline-v1.4.zip`（约 140 MB，Windows x64，依赖 wheel 覆盖 Python 3.9–3.14）。
+
+### 方式一：交给 AI 客户端（推荐）
+
+把包拖进客户端（或直接把文件路径发给它），说一句：
+
+> 按包里的 `AGENTS.md` 把 sgcc-report-ppt 装到本机，装完自己验证一遍，告诉我结果。
+
+客户端会读 `AGENTS.md`，依次完成：检查 Python → 选技能目录 → 运行 `install-offline.py` →
+渲染示例页自检 → 回报结果。全程不联网。
+
+### 方式二：自己双击
+
+解压到固定目录 → 双击 `安装.bat` → 看到 `自检结果: status: PASS` → 新开一次会话。
+
+> 不要在压缩包里直接双击，Windows 的只读临时目录会导致安装失败。
+
+### 包里为什么能离线
+
+| 组成 | 作用 |
+|---|---|
+| `AGENTS.md` / `CLAUDE.md` | 给 AI 客户端的安装步骤与红线 |
+| `install-offline.py` | 安装器：`pip --no-index` 装依赖、复制技能、跑自检 |
+| `wheels/` | playwright / python-pptx / pillow 及其依赖（cp39–cp314） |
+| `sgcc-report-ppt/` | 技能本体 |
+| `安装.bat`、`离线安装说明.md` | 给人用的入口与说明 |
+
+浏览器不需要下载：`shot.py` 与 `visual_qa.py` 共用 `scripts/_browser.py`，按
+`SHOT_CHANNEL` → 自带 Chromium → 系统 Edge → 系统 Chrome 回退，Windows 自带 Edge 即可渲染。
+
+### 前提与限制
+
+- 目标机需自备 **Python 3.9–3.14**（包内是 wheel，不含解释器）；
+- 客户端需能**执行命令**；纯对话客户端只能用方式二人工双击；
+- 离线包为 **Windows x64**；目标机需有「微软雅黑」字体。
+
+### 不用安装器时的手工步骤
+
+```bash
+python -m pip install --no-index --find-links wheels playwright python-pptx pillow
+cp -r sgcc-report-ppt ~/.claude/skills/
+python scripts/shot.py assets/example/slide-demo-three-tier.html demo.png 1
+python scripts/visual_qa.py demo.png assets/example/slide-demo-three-tier.html
+```
+
+`status` 为 `PASS` 或 `WARN`（无 `FAIL`）即安装成功。
 
 ## 1. 这是什么
 
