@@ -10,10 +10,14 @@
 npx skills add AnTi-anti/ft-ppt-agent-skills
 ```
 
-CLI 会自动识别 `skills/sgcc-report-ppt/SKILL.md` 并安装到当前 AI 客户端的技能目录。若未自动发现，可指定路径：
+CLI 会自动识别 `skills/sgcc-report-ppt/SKILL.md` 并安装到当前 AI 客户端的技能目录。
+
+常用参数：
 
 ```bash
-npx skills add AnTi-anti/ft-ppt-agent-skills --path skills/sgcc-report-ppt
+npx skills add AnTi-anti/ft-ppt-agent-skills -l      # 先预览仓库里有哪些技能
+npx skills add AnTi-anti/ft-ppt-agent-skills -g -y   # 装到用户级目录，跳过确认
+npx skills add AnTi-anti/ft-ppt-agent-skills --copy  # 复制文件而非软链接
 ```
 
 安装后新开一次会话，输入 `/` 应能看到 `sgcc-report-ppt`。

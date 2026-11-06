@@ -2,7 +2,7 @@
 
 > 适用对象：需要使用本技能制作/改造「国网（电网）汇报 PPT」的同事
 > 配套文件：`sgcc-report-ppt.skill`（技能分发包，本质是一个 zip）
-> 版本：v1.1 ｜ 2026-11-05
+> 版本：v1.2 ｜ 2026-11-06
 
 ---
 
@@ -37,27 +37,30 @@ python install.py -y            # 覆盖旧版本时不再询问
 
 > 说明：Claude Code 目前没有类似 `npm install` 的技能仓库，个人技能就是 `~/.claude/skills/` 下的文件夹；本脚本把「解压 + 放对位置 + 装依赖 + 自检」合成了一步，等同于 npm 式安装的体验。
 
-## 0.2 通过 npx skills 安装（跨客户端，需 Git 仓库）
+## 0.2 通过 npx skills 安装（跨客户端，已发布）
 
-若希望像 `npx skills add owner/repo` 那样一条命令安装、且不限定 AI 客户端，把 `publish/` 目录推到 Git 仓库即可：
+技能已发布到 Git 仓库：**https://github.com/AnTi-anti/ft-ppt-agent-skills**
+
+任何支持 Agent Skills 的 AI 客户端，一条命令即可安装：
 
 ```bash
-# 1) 仓库结构（已在本目录 publish/ 中准备好）
-publish/
-├── README.md
-└── skills/sgcc-report-ppt/ SKILL.md, references/, scripts/, assets/
-
-# 2) 推送到仓库后，使用者执行
-npx skills add <owner>/<repo>
-
-# 3) 若 CLI 未自动发现技能，指定子路径
-npx skills add <owner>/<repo> --path skills/sgcc-report-ppt
+npx skills add AnTi-anti/ft-ppt-agent-skills
 ```
+
+常用参数（实测于 skills CLI，最新参数以 `npx skills --help` 为准）：
+
+| 参数 | 作用 |
+|---|---|
+| `-l` | 只列出仓库里有哪些技能，不安装 |
+| `-g -y` | 装到用户级目录，跳过确认 |
+| `--copy` | 复制文件而不是软链接 |
+| `-a <agent>` | 指定客户端；`--all` = 全部客户端 |
 
 说明：
 
-- 具体参数以 `npx skills --help` 为准（不同版本可能略有差异）；
-- 需要能访问 npm registry 与 GitHub；内网受限时请用第 0 节的离线安装方式；
+- 仓库结构为 `skills/sgcc-report-ppt/SKILL.md`，CLI 可直接发现（`Found 1 skill`）；
+- **npx 只装技能文件，不装 Python 依赖**，装完仍需执行第 2 节的 `pip install ...` 与 `playwright install chromium`；
+- 需要能访问 npm registry 与 GitHub；内网受限时改用第 0 节的离线安装方式；
 - **客户端支持程度**：实现了 Agent Skills（SKILL.md）规范的客户端可自动安装并触发；只支持规则文件的客户端，可把 SKILL.md 当作规则喂入；无论哪种，`scripts/` 里的 Python 脚本与客户端无关，照常可用。
 
 ## 0.1 手动安装（备选，5 步）
@@ -291,5 +294,6 @@ python scripts/deck_audit.py . deck.pptx
 
 | 版本 | 日期 | 变更 |
 |---|---|---|
+| v1.2 | 2026-11-06 | 技能发布到 GitHub；新增 `npx skills add AnTi-anti/ft-ppt-agent-skills` 安装方式（实测可发现技能） |
 | v1.1 | 2026-11-05 | 新增 `deck_audit.py`、`delete_slide.py`、`patch_png_text.py`；`visual_qa.py` 增加导语条留白检查；`pitfalls.md` 扩至 17 条；`workflow.md` 增加改稿章节；移除旧 `visual_qa_local.py` |
 | v1.0 | 2026-10 | 首版：风格合同、布局 A/B、渲染/QA/组包流水线、三张样例页 |
