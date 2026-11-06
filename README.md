@@ -192,6 +192,56 @@ slides/slide-N.html
 
 技能会按流水线逐页渲染、QA、组包，产物落在 `ppt-output/runs/<RUN_ID>/`。
 
+## 自行修改（改 HTML 就够了）
+
+不想交给 AI 代改、想自己动手时，**直接编辑 HTML 即可**——它就是这个项目唯一的源文件。PNG 与 PPTX 都只是它的产物，手改了也会被下次渲染覆盖。
+
+### 改哪个文件
+
+```
+ppt-output/runs/<RUN_ID>/
+├── slides/slide-1.html … slide-N.html   ← 改这里
+├── images/                              ← 页内插图（HTML 里写作 ../images/xxx.png）
+├── png/  png-hi/                        ← 渲染结果，不要手改
+└── deck.pptx                            ← 打包结果，不要手改
+```
+
+### 改完必须重跑四步
+
+```bash
+cd ppt-output/runs/<RUN_ID>
+
+# 1) 重渲染：1× 供检查，3× 供 PPTX
+python <skill>/scripts/shot.py slides/slide-4.html png/slide-4.png 1
+python <skill>/scripts/shot.py slides/slide-4.html png-hi/slide-4.png 3
+
+# 2) 单页质检：无 FAIL 才放行
+python <skill>/scripts/visual_qa.py png/slide-4.png slides/slide-4.html
+
+# 3) 重新组包：先备份，写完回读校验
+python <skill>/scripts/replace_all_slides_pptx.py deck.pptx png-hi
+
+# 4) 全册复核：页码 / 尺寸 / 哈希
+python <skill>/scripts/deck_audit.py . deck.pptx
+```
+
+`<skill>` 指技能目录，例如 `~/.claude/skills/sgcc-report-ppt`。
+
+### 五条不要碰的约定
+
+1. **画布固定 1280×720**：`body` / `.slide` 不要改尺寸，也不要加 `transform: scale`。
+2. **改文字就只改文字**：不要把 `<b>`、`.lede`、`.card` 这类标签删掉，样式挂在它们身上。
+3. **新增元素用带页面前缀的类名**（如 `.s4-note`），别用 `.k` / `.lg` / `.bk` 这类短名——旧页里有同名全局样式，会串味。
+4. **字号不小于 10px**；卡片里的内容不要超出卡片边框（QA 会报 `card children out of bounds`）。
+5. **文件末尾的 `!important` 覆盖块必须留在最后**，它靠「后写生效」覆盖模板样式，挪到前面就失效。
+
+### 两个例外
+
+- **改图里的字或曲线**：不要改 `images/*.png`，回到绘图脚本（`draw_fig*.py`）改参数重出图，再重渲染；否则下次出图又被覆盖。
+- **增删页**：只改 HTML 不够。删页用 `delete_slide.py`（同时处理 PPTX 页、文件重命名、页码重排），加页需补 PPTX 页；两种情况都要重排 `<b>NN / 总页数</b>`。
+
+> 想先看效果：跑一次 1× 渲染，打开 `png/slide-4.png`。不要直接用浏览器打开 HTML——浏览器会按窗口宽度缩放，看到的和成图不一致。
+
 ## 仓库结构
 
 ```
