@@ -225,7 +225,7 @@ ft-ppt-agent-skills/
 | 脚本 | 作用 |
 |---|---|
 | `scripts/shot.py` | `shot.py <html> <png> <scale>`：1× 供 QA，3× 供 PPTX |
-| `scripts/visual_qa.py` | 单页 QA：结构与像素共 12 项检查，输出 PASS / WARN / FAIL |
+| `scripts/visual_qa.py` | 单页 QA：结构与像素十余项检查，输出 PASS / WARN / FAIL |
 | `scripts/deck_audit.py` | 整册审计：编号、页码、尺寸、stale、PPTX sha1 |
 | `scripts/replace_all_slides_pptx.py` | 把 `png-hi/` 写回 PPTX，备份 + 回读校验 |
 | `scripts/delete_slide.py` | 删页：PPTX 删页 + 文件前移 + 页码重排 |
