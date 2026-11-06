@@ -5,9 +5,11 @@
 
   <p>
     <img src="assets/badges/badge-1.svg" alt="规范：Agent Skill" />
-    <img src="assets/badges/badge-2.svg" alt="画布：1280×720" />
-    <img src="assets/badges/badge-3.svg" alt="成图：3840×2160 3x" />
-    <img src="assets/badges/badge-4.svg" alt="脚本：6 个" />
+    <img src="assets/badges/badge-2.svg" alt="版式：2 种主布局" />
+    <img src="assets/badges/badge-3.svg" alt="画布：1280×720" />
+    <img src="assets/badges/badge-4.svg" alt="成图：3840×2160" />
+    <img src="assets/badges/badge-5.svg" alt="检查：双层 QA" />
+    <img src="assets/badges/badge-6.svg" alt="脚本：6 个" />
   </p>
 </div>
 

@@ -1,15 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="87" height="28" viewBox="0 0 87 28" role="img" aria-label="脚本: 6 个">
-  <linearGradient id="s" x2="0" y2="100%">
-    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
-    <stop offset="1" stop-opacity=".1"/>
-  </linearGradient>
-  <g font-family="Verdana,Segoe UI,Microsoft YaHei,DejaVu Sans,sans-serif" font-size="10" font-weight="bold" letter-spacing="1.4">
-    <rect width="43" height="28" rx="3" fill="#555"/>
-    <rect x="43" width="44" height="28" rx="3" fill="#22c55e"/>
-    <rect width="87" height="28" rx="3" fill="url(#s)"/>
-    <g fill="#fff" text-anchor="middle">
-      <text x="21.7" y="8.5">脚本</text>
-      <text x="65.4" y="8.5">6 个</text>
-    </g>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="146.75" height="28" role="img" aria-label="成图: 3840×2160"><title>成图: 3840×2160</title><g shape-rendering="crispEdges"><rect width="46.5" height="28" fill="#555"/><rect x="46.5" width="100.25" height="28" fill="#ff9700"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="100"><text transform="scale(.1)" x="232.5" y="175" textLength="225">成图</text><text transform="scale(.1)" x="966.25" y="175" textLength="762.5" font-weight="bold">3840×2160</text></g></svg>

@@ -1,15 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="126" height="28" viewBox="0 0 126 28" role="img" aria-label="画布: 1280×720">
-  <linearGradient id="s" x2="0" y2="100%">
-    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
-    <stop offset="1" stop-opacity=".1"/>
-  </linearGradient>
-  <g font-family="Verdana,Segoe UI,Microsoft YaHei,DejaVu Sans,sans-serif" font-size="10" font-weight="bold" letter-spacing="1.4">
-    <rect width="43" height="28" rx="3" fill="#555"/>
-    <rect x="43" width="83" height="28" rx="3" fill="#00b2b0"/>
-    <rect width="126" height="28" rx="3" fill="url(#s)"/>
-    <g fill="#fff" text-anchor="middle">
-      <text x="21.7" y="8.5">画布</text>
-      <text x="84.7" y="8.5">1280×720</text>
-    </g>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="28" role="img" aria-label="版式: 2 种主布局"><title>版式: 2 种主布局</title><g shape-rendering="crispEdges"><rect width="46.5" height="28" fill="#555"/><rect x="46.5" width="81.5" height="28" fill="#00d4ff"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="100"><text transform="scale(.1)" x="232.5" y="175" textLength="225">版式</text><text transform="scale(.1)" x="872.5" y="175" textLength="575" font-weight="bold">2 种主布局</text></g></svg>
